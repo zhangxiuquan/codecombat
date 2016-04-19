@@ -235,8 +235,43 @@ mixin courseProgressTab
         .student-levels-table
           +sortButtons
           each student in view.students.models
-            +studentLevelsRow(student)
-
+            if _.contains(view.selectedCourse.members, student.id)
+              +studentLevelsRow(student)
+    // TODO: If any students aren't assigned the course
+    if view.selectedCourse && view.selectedCourse.members.length < view.students.length
+      .unassigned-students.render-on-course-sync
+        h2
+          span(data-i18n='TODO')
+            | Students who have not been assigned
+          | 
+          span= view.selectedCourse.get('name')
+        for student in view.students.models
+          unless _.contains(view.selectedCourse.members, student.id)
+            - console.log(_.contains(view.selectedCourse.members, student.id), student.id, student.get('name'))
+            .row.unassigned-student-row.alternating-background
+              .student-name.col-sm-3
+                = student.broadName()
+              .student-email.small-details.col-sm-3
+                = student.get('email')
+              .col-sm-4
+                .latest-completed.truncate.small
+                  i.m-r-1
+                    span(data-i18n='TODO')
+                      | Latest completed
+                    | : 
+                  +longLevelName(student.latestCompleteLevel)
+              .col-sm-2
+                if student.isEnrolled()
+                  .btn.btn-md.btn-navy.pull-right
+                    span(data-i18n='TODO')
+                      | Assign Course
+                else
+                  .btn.btn-md.btn-navy.pull-right
+                    span(data-i18n='TODO')
+                      | Enroll Student
+          
+      
+        
 mixin courseOverview
   - var course = view.selectedCourse
   - var levels = view.classroom.getLevels({courseID: course.id, withoutLadderLevels: true}).models
