@@ -21,24 +21,38 @@ module.exports = class TeacherClassView extends RootView
   template: template
 
   events:
+    'click .students-tab-btn': (e) ->
+      e.preventDefault()
+      @trigger 'open-students-tab'
+    'click .course-progress-tab-btn': (e) ->
+      e.preventDefault()
+      @trigger 'open-course-progress-tab'
     'click .edit-classroom': 'onClickEditClassroom'
     'click .add-students-btn': 'onClickAddStudents'
-    'click .sort-by-name': 'sortByName'
+    # 'click .sort-by-name': 'sortByName'
+    'click .sort-by-name': -> @trigger 'students:sort-by-name'
     'click .sort-by-progress': 'sortByProgress'
     'click #copy-url-btn': 'copyURL'
     'click #copy-code-btn': 'copyCode'
     'click .remove-student-link': 'onClickRemoveStudentLink'
+    'click .assign-student-button': 'onClickAssign'
     'click .enroll-student-button': 'onClickEnroll'
     'click .assign-to-selected-students': 'onClickBulkAssign'
     'click .enroll-selected-students': 'onClickBulkEnroll'
     'click .export-student-progress-btn': 'onClickExportStudentProgress'
     'click .select-all': 'onClickSelectAll'
     'click .student-checkbox': 'onClickStudentCheckbox'
-    'change .course-select': 'onChangeCourseSelect'
+    'change .course-select': (e) ->
+      @trigger 'course-select:change', @courses.get($(e.currentTarget).val())
 
   initialize: (options, classroomID) ->
     super(options)
     @progressDotTemplate = require 'templates/courses/progress-dot'
+    
+    if Backbone.history.getHash() in ['students-tab', 'course-progress-tab']
+      @activeTab = '#' + Backbone.history.getHash()
+    else
+      @activeTab = window.location.hash = '#students-tab'
 
     @sortAttribute = 'name'
     @sortDirection = 1
@@ -46,14 +60,12 @@ module.exports = class TeacherClassView extends RootView
     @classroom = new Classroom({ _id: classroomID })
     @classroom.fetch()
     @supermodel.trackModel(@classroom)
-
+    
+    @students = new Users()
     @listenTo @classroom, 'sync', ->
-      @students = new Users()
       jqxhrs = @students.fetchForClassroom(@classroom, removeDeleted: true)
       if jqxhrs.length > 0
         @supermodel.trackCollection(@students)
-      @listenTo @students, 'sync', @sortByName
-      @listenTo @students, 'sort', @renderSelectors.bind(@, '.students-table', '.student-levels-table', '.unassigned-students')
       
       @classroom.sessions = new LevelSessions()
       requests = @classroom.sessions.fetchForAllClassroomMembers(@classroom)
@@ -66,11 +78,48 @@ module.exports = class TeacherClassView extends RootView
     @courseInstances = new CourseInstances()
     @courseInstances.fetchForClassroom(classroomID)
     @supermodel.trackCollection(@courseInstances)
+    
+    @attachMediatorEvents()
+      
+  attachMediatorEvents: () ->
+    # Model/Collection events
+    @listenTo @courses, 'sync change update', ->
+      @setCourseMembers() # Is this necessary?
+      @selectedCourse ?= @courses.first()
+      @renderSelectors('.render-on-course-sync')
+    @listenTo @courseInstances, 'sync change update', ->
+      @setCourseMembers()
+      @render()
+    @listenTo @students, 'sync', @sortByName
+    @listenTo @students, 'sync change update sort', ->
+      # Set state/props of things that depend on students?
+      @render()
+    # DOM events
+    @listenTo @, 'students:sort-by-name', @sortByName # or something
+    @listenTo @, 'open-students-tab', ->
+      if window.location.hash isnt '#students-tab'
+        window.location.hash = '#students-tab'
+      @activeTab = '#students-tab'
+      @render()
+    @listenTo @, 'open-course-progress-tab', ->
+      if window.location.hash isnt '#course-progress-tab'
+        window.location.hash = '#course-progress-tab'
+      @activeTab = '#course-progress-tab'
+      @render()
+    @listenTo @, 'course-select:change', (selectedCourse) ->
+      @selectedCourse = selectedCourse
+      @render()
 
     @levels = new Levels()
     @levels.fetchForClassroom(classroomID, {data: {project: 'original,concepts'}})
     @supermodel.trackCollection(@levels)
 
+  setCourseMembers: =>
+    for course in @courses.models
+      course.instance = @courseInstances.findWhere({ courseID: course.id, classroomID: @classroom.id })
+      course.members = course.instance?.get('members') or []
+    null
+    
   onLoaded: ->
     @removeDeletedStudents()
 
@@ -88,13 +137,9 @@ module.exports = class TeacherClassView extends RootView
     @progressData = helper.calculateAllProgress(classroomsStub, @courses, @courseInstances, @students)
     # @conceptData = helper.calculateConceptsCovered(classroomsStub, @courses, @campaigns, @courseInstances, @students)
     
-    for course in @courses.models
-      instance = @courseInstances.findWhere({ courseID: course.id, classroomID: @classroom.id })
-      course.members = instance?.get('members') || []
-    
     @selectedCourse = @courses.first()
     super()
-
+  
   copyCode: ->
     @$('#join-code-input').val(@classCode).select()
     @tryCopy()
@@ -106,7 +151,7 @@ module.exports = class TeacherClassView extends RootView
   tryCopy: ->
     try
       document.execCommand('copy')
-      application.tracker?.trackEvent 'Classroom copy URL', category: 'Courses', classroomID: @classroom.id, url: @joinURL
+      application.tracker?.trackEvent 'Classroom copy URL', category: 'Courses', classroomID: @classroom.id, url: @state.joinURL
     catch err
       message = 'Oops, unable to copy'
       noty text: message, layout: 'topCenter', type: 'error', killer: false
@@ -144,26 +189,26 @@ module.exports = class TeacherClassView extends RootView
     true
 
   sortByName: (e) ->
-    if @sortValue is 'name'
-      @sortDirection = -@sortDirection
+    if @state.sortValue is 'name'
+      @state.sortDirection = -@state.sortDirection
     else
-      @sortValue = 'name'
-      @sortDirection = 1
-
-    dir = @sortDirection
+      @state.sortValue = 'name'
+      @state.sortDirection = 1
+      
+    dir = @state.sortDirection
     @students.comparator = (student1, student2) ->
       return (if student1.broadName().toLowerCase() < student2.broadName().toLowerCase() then -dir else dir)
     @students.sort()
 
   sortByProgress: (e) ->
-    if @sortValue is 'progress'
-      @sortDirection = -@sortDirection
+    if @state.sortValue is 'progress'
+      @state.sortDirection = -@state.sortDirection
     else
-      @sortValue = 'progress'
-      @sortDirection = 1
-
-    dir = @sortDirection
-
+      @state.sortValue = 'progress'
+      @state.sortDirection = 1
+      
+    dir = @state.sortDirection
+    
     @students.comparator = (student) ->
       #TODO: I would like for this to be in the Level model,
       #      but it doesn't know about its own courseNumber
@@ -221,9 +266,17 @@ module.exports = class TeacherClassView extends RootView
     encodedUri = encodeURI(csvContent)
     window.open(encodedUri)
 
+    
+  onClickAssign: (e) ->
+    userID = $(e.currentTarget).data('user-id')
+    user = @students.get(userID)
+    members = [userID]
+    courseID = $(e.currentTarget).data('course-id')
+    
+    @assignCourse courseID, members
+    
   onClickBulkAssign: ->
     courseID = @$('.bulk-course-select').val()
-    courseInstance = @courseInstances.findWhere({ courseID, classroomID: @classroom.id })
     selectedIDs = @getSelectedStudentIDs()
     members = selectedIDs.filter((index, userID) =>
       user = @students.get(userID)
@@ -237,11 +290,14 @@ module.exports = class TeacherClassView extends RootView
 
     @assigningToNobody = selectedIDs.length is 0
     @$('.no-students-selected').toggleClass('visible', @assigningToNobody)
-
+    
+    @assignCourse(courseID, members, @onBulkAssignSuccess)
+    
+  # TODO: Move this to the model. Use promises/callbacks?
+  assignCourse: (courseID, members) ->
+    courseInstance = @courseInstances.findWhere({ courseID, classroomID: @classroom.id })
     if courseInstance
-      courseInstance.addMembers members, {
-        success: @onBulkAssignSuccess
-      }
+      courseInstance.addMembers members
     else
       courseInstance = new CourseInstance {
         courseID,
@@ -251,10 +307,8 @@ module.exports = class TeacherClassView extends RootView
       }
       @courseInstances.add(courseInstance)
       courseInstance.save {}, {
-        success: =>
-          courseInstance.addMembers members, {
-            success: @onBulkAssignSuccess
-          }
+        success: ->
+          courseInstance.addMembers members
       }
     null
 
@@ -281,10 +335,6 @@ module.exports = class TeacherClassView extends RootView
     # checkboxes.prop('checked', false)
     checkboxes = @$('.student-checkbox input')
     @$('.select-all input').prop('checked', _.all(checkboxes, 'checked'))
-
-  onChangeCourseSelect: (e) ->
-    @selectedCourse = @courses.get($(e.currentTarget).val())
-    @renderSelectors('.render-on-course-sync')
 
   classStats: ->
     stats = {}
