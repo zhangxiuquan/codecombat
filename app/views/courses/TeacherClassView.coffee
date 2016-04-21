@@ -12,6 +12,7 @@ Levels = require 'collections/Levels'
 LevelSessions = require 'collections/LevelSessions'
 User = require 'models/User'
 Users = require 'collections/Users'
+Course = require 'models/Course'
 Courses = require 'collections/Courses'
 CourseInstance = require 'models/CourseInstance'
 CourseInstances = require 'collections/CourseInstances'
@@ -43,16 +44,46 @@ module.exports = class TeacherClassView extends RootView
     'click .select-all': 'onClickSelectAll'
     'click .student-checkbox': 'onClickStudentCheckbox'
     'change .course-select': (e) ->
-      @trigger 'course-select:change', @courses.get($(e.currentTarget).val())
+      @trigger 'course-select:change', { selectedCourse: @courses.get($(e.currentTarget).val()) }
+      
+  # TODO: Move into CocoView
+  state: {}
+  setState: (newState) ->
+    # TODO: Defer state changes once we remove renders from elsewhere
+    _.assign @state, newState
+    @render()
+    
+  getInitialState: ->
+    if Backbone.history.getHash() in ['students-tab', 'course-progress-tab']
+      activeTab = '#' + Backbone.history.getHash()
+    else
+      activeTab = '#students-tab'
+    {
+      sortAttribute: 'name'
+      sortDirection: 1
+      activeTab
+      students: new Users()
+      classCode: ""
+      joinURL: ""
+      errors:
+        assigningToNobody: false
+        assigningToUnenrolled: false
+      selectedCourse: new Course() # For both bulk-assign and Course Progress
+      classStats:
+        averagePlaytime: ""
+        totalPlaytime: ""
+        averageLevelsComplete: ""
+        totalLevelsComplete: ""
+        enrolledUsers: ""
+    }
+    # TODO: use these values instead of instanve variables
 
   initialize: (options, classroomID) ->
     super(options)
+    @state = @getInitialState() # TODO: Move into CocoView?
     @progressDotTemplate = require 'templates/courses/progress-dot'
     
-    if Backbone.history.getHash() in ['students-tab', 'course-progress-tab']
-      @activeTab = '#' + Backbone.history.getHash()
-    else
-      @activeTab = window.location.hash = '#students-tab'
+    window.location.hash = @state.activeTab # TODO: Don't push to URL history (maybe don't use url fragment for default tab)
 
     @sortAttribute = 'name'
     @sortDirection = 1
@@ -83,32 +114,40 @@ module.exports = class TeacherClassView extends RootView
       
   attachMediatorEvents: () ->
     # Model/Collection events
+    @listenTo @classroom, 'sync change update', ->
+      classCode = @classroom.get('codeCamel') or @classroom.get('code')
+      @setState {
+        classCode: classCode
+        joinURL: document.location.origin + "/courses?_cc=" + classCode
+      }
     @listenTo @courses, 'sync change update', ->
       @setCourseMembers() # Is this necessary?
-      @selectedCourse ?= @courses.first()
-      @renderSelectors('.render-on-course-sync')
+      @setState selectedCourse: @courses.first() unless @state.selectedCourse
     @listenTo @courseInstances, 'sync change update', ->
       @setCourseMembers()
-      @render()
-    @listenTo @students, 'sync', @sortByName
-    @listenTo @students, 'sync change update sort', ->
+    @listenToOnce @students, 'sync', # TODO: This seems like it's in the wrong place?
+      @sortByName
+    @listenTo @students, 'sync change update', ->
       # Set state/props of things that depend on students?
-      @render()
+      # Set specific parts of state based on the models, rather than just dumping the collection there?
+      classStats = @calculateClassStats()
+      @setState classStats: classStats if classStats
+      @setState students: @students
+    @listenTo @students, 'sort', ->
+      @setState students: @students
+    
     # DOM events
     @listenTo @, 'students:sort-by-name', @sortByName # or something
     @listenTo @, 'open-students-tab', ->
       if window.location.hash isnt '#students-tab'
         window.location.hash = '#students-tab'
-      @activeTab = '#students-tab'
-      @render()
+      @setState activeTab: '#students-tab'
     @listenTo @, 'open-course-progress-tab', ->
       if window.location.hash isnt '#course-progress-tab'
         window.location.hash = '#course-progress-tab'
-      @activeTab = '#course-progress-tab'
-      @render()
-    @listenTo @, 'course-select:change', (selectedCourse) ->
-      @selectedCourse = selectedCourse
-      @render()
+      @setState activeTab: '#course-progress-tab'
+    @listenTo @, 'course-select:change', ({ selectedCourse }) ->
+      @setState selectedCourse: selectedCourse
 
     @levels = new Levels()
     @levels.fetchForClassroom(classroomID, {data: {project: 'original,concepts'}})
@@ -121,23 +160,28 @@ module.exports = class TeacherClassView extends RootView
     null
     
   onLoaded: ->
-    @removeDeletedStudents()
-
-    @classCode = @classroom.get('codeCamel') or @classroom.get('code')
-    @joinURL = document.location.origin + "/courses?_cc=" + @classCode
-
-    @earliestIncompleteLevel = helper.calculateEarliestIncomplete(@classroom, @courses, @courseInstances, @students)
-    @latestCompleteLevel = helper.calculateLatestComplete(@classroom, @courses, @courseInstances, @students)
+    @removeDeletedStudents() # TODO: Move this to mediator listeners? For both classroom and students?
+    
+    # TODO: How to structure this in @state?
     for student in @students.models
       # TODO: this is a weird hack
       studentsStub = new Users([ student ])
       student.latestCompleteLevel = helper.calculateLatestComplete(@classroom, @courses, @courseInstances, studentsStub)
-
-    classroomsStub = new Classrooms([ @classroom ])
-    @progressData = helper.calculateAllProgress(classroomsStub, @courses, @courseInstances, @students)
-    # @conceptData = helper.calculateConceptsCovered(classroomsStub, @courses, @campaigns, @courseInstances, @students)
     
-    @selectedCourse = @courses.first()
+    earliestIncompleteLevel = helper.calculateEarliestIncomplete(@classroom, @courses, @courseInstances, @students)
+    latestCompleteLevel = helper.calculateLatestComplete(@classroom, @courses, @courseInstances, @students)
+      
+    classroomsStub = new Classrooms([ @classroom ])
+    progressData = helper.calculateAllProgress(classroomsStub, @courses, @courseInstances, @students)
+    # conceptData: helper.calculateConceptsCovered(classroomsStub, @courses, @campaigns, @courseInstances, @students)
+    
+    @setState {
+      earliestIncompleteLevel
+      latestCompleteLevel
+      progressData
+      classStats: @calculateClassStats()
+      selectedCourse: @courses.first()
+    }
     super()
   
   copyCode: ->
@@ -174,7 +218,6 @@ module.exports = class TeacherClassView extends RootView
 
   onStudentRemoved: (e) ->
     @students.remove(e.user)
-    @render()
     application.tracker?.trackEvent 'Classroom removed student', category: 'Courses', classroomID: @classroom.id, userID: e.user.id
 
   onClickAddStudents: (e) =>
@@ -282,14 +325,13 @@ module.exports = class TeacherClassView extends RootView
       user = @students.get(userID)
       user.isEnrolled()
     ).toArray()
-
-    @assigningToUnenrolled = _.any selectedIDs, (userID) =>
+    
+    assigningToUnenrolled = _.any selectedIDs, (userID) =>
       not @students.get(userID).isEnrolled()
-
-    @$('.cant-assign-to-unenrolled').toggleClass('visible', @assigningToUnenrolled)
-
-    @assigningToNobody = selectedIDs.length is 0
-    @$('.no-students-selected').toggleClass('visible', @assigningToNobody)
+      
+    assigningToNobody = selectedIDs.length is 0
+    
+    @setState errors: { assigningToNobody, assigningToUnenrolled }
     
     @assignCourse(courseID, members, @onBulkAssignSuccess)
     
@@ -336,7 +378,8 @@ module.exports = class TeacherClassView extends RootView
     checkboxes = @$('.student-checkbox input')
     @$('.select-all input').prop('checked', _.all(checkboxes, 'checked'))
 
-  classStats: ->
+  calculateClassStats: ->
+    return unless @classroom.sessions?.loaded and @students.loaded
     stats = {}
 
     playtime = 0
@@ -355,4 +398,5 @@ module.exports = class TeacherClassView extends RootView
 
     enrolledUsers = @students.filter (user) -> user.get('coursePrepaidID')
     stats.enrolledUsers = _.size(enrolledUsers)
+    
     return stats
