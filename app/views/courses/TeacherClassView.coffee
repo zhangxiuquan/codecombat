@@ -30,8 +30,7 @@ module.exports = class TeacherClassView extends RootView
       @trigger 'open-course-progress-tab'
     'click .edit-classroom': 'onClickEditClassroom'
     'click .add-students-btn': 'onClickAddStudents'
-    # 'click .sort-by-name': 'sortByName'
-    'click .sort-by-name': -> @trigger 'students:sort-by-name'
+    'click .sort-by-name': 'sortByName'
     'click .sort-by-progress': 'sortByProgress'
     'click #copy-url-btn': 'copyURL'
     'click #copy-code-btn': 'copyCode'
@@ -68,7 +67,7 @@ module.exports = class TeacherClassView extends RootView
       errors:
         assigningToNobody: false
         assigningToUnenrolled: false
-      selectedCourse: new Course() # For both bulk-assign and Course Progress
+      selectedCourse: undefined
       classStats:
         averagePlaytime: ""
         totalPlaytime: ""
@@ -76,7 +75,6 @@ module.exports = class TeacherClassView extends RootView
         totalLevelsComplete: ""
         enrolledUsers: ""
     }
-    # TODO: use these values instead of instanve variables
 
   initialize: (options, classroomID) ->
     super(options)
@@ -84,10 +82,7 @@ module.exports = class TeacherClassView extends RootView
     @progressDotTemplate = require 'templates/courses/progress-dot'
     
     window.location.hash = @state.activeTab # TODO: Don't push to URL history (maybe don't use url fragment for default tab)
-
-    @sortAttribute = 'name'
-    @sortDirection = 1
-
+    
     @classroom = new Classroom({ _id: classroomID })
     @classroom.fetch()
     @supermodel.trackModel(@classroom)
@@ -115,6 +110,7 @@ module.exports = class TeacherClassView extends RootView
   attachMediatorEvents: () ->
     # Model/Collection events
     @listenTo @classroom, 'sync change update', ->
+      @removeDeletedStudents()
       classCode = @classroom.get('codeCamel') or @classroom.get('code')
       @setState {
         classCode: classCode
@@ -125,11 +121,16 @@ module.exports = class TeacherClassView extends RootView
       @setState selectedCourse: @courses.first() unless @state.selectedCourse
     @listenTo @courseInstances, 'sync change update', ->
       @setCourseMembers()
+      @render() # TODO: use state
+    @listenTo @courseInstances, 'add-members', ->
+      noty text: $.i18n.t('teacher.assigned'), layout: 'center', type: 'information', killer: true, timeout: 5000
     @listenToOnce @students, 'sync', # TODO: This seems like it's in the wrong place?
       @sortByName
-    @listenTo @students, 'sync change update', ->
+    @listenTo @students, 'sync change update add remove reset', ->
       # Set state/props of things that depend on students?
       # Set specific parts of state based on the models, rather than just dumping the collection there?
+      @removeDeletedStudents()
+      @calculateProgressAndLevels()
       classStats = @calculateClassStats()
       @setState classStats: classStats if classStats
       @setState students: @students
@@ -137,7 +138,6 @@ module.exports = class TeacherClassView extends RootView
       @setState students: @students
     
     # DOM events
-    @listenTo @, 'students:sort-by-name', @sortByName # or something
     @listenTo @, 'open-students-tab', ->
       if window.location.hash isnt '#students-tab'
         window.location.hash = '#students-tab'
@@ -161,7 +161,11 @@ module.exports = class TeacherClassView extends RootView
     
   onLoaded: ->
     @removeDeletedStudents() # TODO: Move this to mediator listeners? For both classroom and students?
+    @calculateProgressAndLevels()
+    super()
     
+  calculateProgressAndLevels: ->
+    return unless @supermodel.progress is 1
     # TODO: How to structure this in @state?
     for student in @students.models
       # TODO: this is a weird hack
@@ -182,14 +186,13 @@ module.exports = class TeacherClassView extends RootView
       classStats: @calculateClassStats()
       selectedCourse: @courses.first()
     }
-    super()
   
   copyCode: ->
-    @$('#join-code-input').val(@classCode).select()
+    @$('#join-code-input').val(@state.classCode).select()
     @tryCopy()
 
   copyURL: ->
-    @$('#join-url-input').val(@joinURL).select()
+    @$('#join-url-input').val(@state.joinURL).select()
     @tryCopy()
 
   tryCopy: ->
@@ -226,6 +229,7 @@ module.exports = class TeacherClassView extends RootView
     @listenToOnce modal, 'hide', @render
 
   removeDeletedStudents: () ->
+    return unless @classroom.loaded and @students.loaded
     _.remove(@classroom.get('members'), (memberID) =>
       not @students.get(memberID) or @students.get(memberID)?.get('deleted')
     )
@@ -273,7 +277,9 @@ module.exports = class TeacherClassView extends RootView
     selectedUsers = new Users([user])
     modal = new ActivateLicensesModal { @classroom, selectedUsers, users: @students }
     @openModalView(modal)
-    modal.once 'redeem-users', -> document.location.reload()
+    modal.once 'redeem-users', =>
+      # TODO: Have the modal pass back the users instead of updating the collection itself?
+      null
     application.tracker?.trackEvent 'Classroom started enroll students', category: 'Courses'
 
   onClickBulkEnroll: ->
@@ -333,7 +339,7 @@ module.exports = class TeacherClassView extends RootView
     
     @setState errors: { assigningToNobody, assigningToUnenrolled }
     
-    @assignCourse(courseID, members, @onBulkAssignSuccess)
+    @assignCourse courseID, members
     
   # TODO: Move this to the model. Use promises/callbacks?
   assignCourse: (courseID, members) ->
@@ -353,11 +359,7 @@ module.exports = class TeacherClassView extends RootView
           courseInstance.addMembers members
       }
     null
-
-  onBulkAssignSuccess: =>
-    @render() unless @destroyed
-    noty text: $.i18n.t('teacher.assigned'), layout: 'center', type: 'information', killer: true, timeout: 5000
-
+    
   onClickSelectAll: (e) ->
     e.preventDefault()
     checkboxes = @$('.student-checkbox input')
@@ -379,7 +381,7 @@ module.exports = class TeacherClassView extends RootView
     @$('.select-all input').prop('checked', _.all(checkboxes, 'checked'))
 
   calculateClassStats: ->
-    return unless @classroom.sessions?.loaded and @students.loaded
+    return {} unless @classroom.sessions?.loaded and @students.loaded
     stats = {}
 
     playtime = 0

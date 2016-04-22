@@ -92,6 +92,7 @@ module.exports = class ActivateLicensesModal extends ModalView
   redeemUsers: ->
     if not @usersToRedeem.size()
       @finishRedeemUsers()
+      @hide()
       return
 
     user = @usersToRedeem.first()
@@ -102,7 +103,8 @@ module.exports = class ActivateLicensesModal extends ModalView
       url: _.result(prepaid, 'url') + '/redeemers'
       data: { userID: user.id }
       context: @
-      success: ->
+      success: (prepaid) ->
+        user.set('coursePrepaidID', prepaid._id)
         @usersToRedeem.remove(user)
         pct = 100 * (@usersToRedeem.originalSize - @usersToRedeem.size() / @usersToRedeem.originalSize)
         @$('#progress-area .progress-bar').css('width', "#{pct.toFixed(1)}%")
