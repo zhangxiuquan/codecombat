@@ -25,18 +25,15 @@ module.exports = class SpellTranslationView extends CocoView
     @thang = options.thang
     @spell = options.spell
     @supermodel = options.supermodel
-    @globals = {} # TODO: Do I want this?
     
-    lcs = @supermodel.getModels LevelComponent
-    @componentTranslations = @supermodel.getModels(LevelComponent).reduce((acc, lc) ->
+    
+    levelComponents = @supermodel.getModels LevelComponent
+    @componentTranslations = levelComponents.reduce((acc, lc) ->
       for doc in (lc.get('propertyDocumentation') ? [])
         translated = utils.i18n(doc, 'name', null, false)
         acc[doc.name] = translated if translated isnt doc.name
-        console.log translated, doc.name
       acc
     , {})
-    
-    console.log @componentTranslations
     
     @onMouseMove = _.throttle @onMouseMove, 25
     
@@ -50,7 +47,7 @@ module.exports = class SpellTranslationView extends CocoView
     
   isIdentifier: (t) ->
     # TODO: This is actually all tokens
-    t and (t.type in ['identifier', 'keyword'] or t.value is 'this' or @globals[t.value])
+    t and (t.type in ['identifier', 'keyword'] or t.value is 'this')
     
   onMouseMove: (e) =>
     return if @destroyed
@@ -60,7 +57,7 @@ module.exports = class SpellTranslationView extends CocoView
     while it.getCurrentTokenRow() is pos.row and not @isIdentifier(token = it.getCurrentToken())
       break if endOfLine or not token  # Don't iterate beyond end or beginning of line
       it.stepBackward()
-    unless token
+    unless @isIdentifier(token)
       @word = null
       @update()
       return
@@ -71,7 +68,6 @@ module.exports = class SpellTranslationView extends CocoView
     catch error
       start = 0
     end = start + token.value.length
-    console.log token
     if @isIdentifier(token)
       @word = token.value
       @markerRange = new Range pos.row, start, pos.row, end
@@ -81,8 +77,8 @@ module.exports = class SpellTranslationView extends CocoView
   reposition: (e) ->
     offsetX = e.offsetX ? e.clientX - $(e.target).offset().left
     offsetY = e.offsetY ? e.clientY - $(e.target).offset().top
-    w = $(document).width()
-    offsetX = w - $(e.target).offset().left - 300 if e.clientX + 300 > w
+    w = $(document).width() - 20
+    offsetX = w - $(e.target).offset().left - @$el.width() if e.clientX + @$el.width() > w
     @pos = {left: offsetX + 80, top: offsetY - 20}
     @$el.css(@pos)
     
@@ -96,7 +92,6 @@ module.exports = class SpellTranslationView extends CocoView
     translation = @componentTranslations[@word] or $.t(i18nKey)
     if @word and translation and translation isnt i18nKey
       @setTooltipText translation
-      console.log "token:", @word, "translated:", translation
     else
       @$el.hide()
 

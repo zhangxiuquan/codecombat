@@ -188,7 +188,7 @@
     campaign_old_multiplayer_description: "Relics of a more civilized age. No simulations are run for these older, hero-less multiplayer arenas."
     
   code:
-    if: "if"
+    if: "if" # Keywords
     else: "else"
     elif: "elif"
     while: "while"
@@ -204,6 +204,32 @@
     self: "self"
     hero: "hero"
     this: "this"
+    Date: "Date" # Globals
+    Vector: "Vector"
+    Array: "Array"
+    Function: "Function"
+    Math: "Math"
+    Number: "Number"
+    Object: "Object"
+    RegExp: "RegExp"
+    String: "String"
+    isFinite: "isFinite" # Built-ins
+    isNaN: "isNaN"
+    parseFloat: "parseFloat"
+    parseInt: "parseInt"
+    decodeURI: "decodeURI"
+    decodeURIComponent: "decodeURIComponent"
+    encodeURI: "encodeURI"
+    encodeURIComponent: "encodeURIComponent"
+    escape: "escape"
+    unescape: "unescape"
+    Infinity: "Infinity"
+    NaN: "NaN"
+    undefined: "undefined"
+    null: "null"
+    Boolean: "Boolean"
+    Error: "Error"
+    arguments: "arguments"
 
   share_progress_modal:
     blurb: "You’re making great progress! Tell your parent how much you've learned with CodeCombat."
