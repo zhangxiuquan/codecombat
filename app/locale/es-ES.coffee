@@ -204,24 +204,6 @@ module.exports = nativeDescription: "español (ES)", englishDescription: "Spanis
     self: "yo"
     hero: "héroe"
     this: "esta"
-    isFinite: "esFinito" # Built-ins
-    isNaN: "isNaN"
-    parseFloat: "parseFloat"
-    parseInt: "parseInt"
-    decodeURI: "decodeURI"
-    decodeURIComponent: "decodeURIComponent"
-    encodeURI: "encodeURI"
-    encodeURIComponent: "encodeURIComponent"
-    escape: "escape"
-    unescape: "unescape"
-    Infinity: "Infinity"
-    NaN: "NaN"
-    undefined: "undefined"
-    null: "null"
-    Boolean: "Boolean"
-    Error: "Error"
-    arguments: "arguments"
-    
 
   share_progress_modal:
     blurb: "¡Estás progresando bastante bien! Dile a tus padres cuánto has aprendido con CodeCombat."
