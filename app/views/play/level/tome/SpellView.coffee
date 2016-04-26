@@ -632,7 +632,7 @@ module.exports = class SpellView extends CocoView
     @$el.append @debugView.render().$el.hide()
     
   createTranslationView: ->
-    @translationView = new SpellTranslationView { @ace, @thang, @spell, @supermodel }
+    @translationView = new SpellTranslationView { @ace, @supermodel }
     @$el.append @translationView.render().$el.hide()
 
   createToolbarView: ->
@@ -655,7 +655,6 @@ module.exports = class SpellView extends CocoView
     @createDebugView() unless @debugView
     @debugView?.thang = @thang
     @createTranslationView() unless @translationView
-    @translationView?.thang = @thang
     @toolbarView?.toggleFlow false
     @updateAether false, false
     # @addZatannaSnippets()
