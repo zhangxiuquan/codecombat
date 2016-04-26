@@ -90,7 +90,7 @@ module.exports = class SpellTranslationView extends CocoView
   update: ->
     i18nKey = 'code.'+@word
     translation = @componentTranslations[@word] or $.t(i18nKey)
-    if @word and translation and translation isnt i18nKey
+    if @word and translation and translation not in [i18nKey, @word]
       @setTooltipText translation
     else
       @$el.hide()
