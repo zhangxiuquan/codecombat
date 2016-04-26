@@ -1,4 +1,5 @@
 RootView = require 'views/core/RootView'
+State = require 'models/State'
 template = require 'templates/courses/teacher-class-view'
 helper = require 'lib/coursesHelper'
 ClassroomSettingsModal = require 'views/courses/ClassroomSettingsModal'
@@ -42,16 +43,9 @@ module.exports = class TeacherClassView extends RootView
     'click .export-student-progress-btn': 'onClickExportStudentProgress'
     'click .select-all': 'onClickSelectAll'
     'click .student-checkbox': 'onClickStudentCheckbox'
-    'change .course-select': (e) ->
+    'change .course-select, .bulk-course-select': (e) ->
       @trigger 'course-select:change', { selectedCourse: @courses.get($(e.currentTarget).val()) }
       
-  # TODO: Move into CocoView
-  state: {}
-  setState: (newState) ->
-    # TODO: Defer state changes once we remove renders from elsewhere
-    _.assign @state, newState
-    @render()
-    
   getInitialState: ->
     if Backbone.history.getHash() in ['students-tab', 'course-progress-tab']
       activeTab = '#' + Backbone.history.getHash()
@@ -78,10 +72,10 @@ module.exports = class TeacherClassView extends RootView
 
   initialize: (options, classroomID) ->
     super(options)
-    @state = @getInitialState() # TODO: Move into CocoView?
     @progressDotTemplate = require 'templates/courses/progress-dot'
     
-    window.location.hash = @state.activeTab # TODO: Don't push to URL history (maybe don't use url fragment for default tab)
+    @state = new State(@getInitialState())
+    window.location.hash = @state.get('activeTab') # TODO: Don't push to URL history (maybe don't use url fragment for default tab)
     
     @classroom = new Classroom({ _id: classroomID })
     @classroom.fetch()
@@ -108,17 +102,18 @@ module.exports = class TeacherClassView extends RootView
     @attachMediatorEvents()
       
   attachMediatorEvents: () ->
+    @listenTo @state, 'sync change', @render
     # Model/Collection events
     @listenTo @classroom, 'sync change update', ->
       @removeDeletedStudents()
       classCode = @classroom.get('codeCamel') or @classroom.get('code')
-      @setState {
+      @state.set {
         classCode: classCode
         joinURL: document.location.origin + "/courses?_cc=" + classCode
       }
     @listenTo @courses, 'sync change update', ->
       @setCourseMembers() # Is this necessary?
-      @setState selectedCourse: @courses.first() unless @state.selectedCourse
+      @state.set selectedCourse: @courses.first() unless @state.get('selectedCourse')
     @listenTo @courseInstances, 'sync change update', ->
       @setCourseMembers()
       @render() # TODO: use state
@@ -132,22 +127,23 @@ module.exports = class TeacherClassView extends RootView
       @removeDeletedStudents()
       @calculateProgressAndLevels()
       classStats = @calculateClassStats()
-      @setState classStats: classStats if classStats
-      @setState students: @students
+      @state.set classStats: classStats if classStats
+      @state.set students: @students
     @listenTo @students, 'sort', ->
-      @setState students: @students
+      @state.set students: @students
+      @render()
     
     # DOM events
     @listenTo @, 'open-students-tab', ->
       if window.location.hash isnt '#students-tab'
         window.location.hash = '#students-tab'
-      @setState activeTab: '#students-tab'
+      @state.set activeTab: '#students-tab'
     @listenTo @, 'open-course-progress-tab', ->
       if window.location.hash isnt '#course-progress-tab'
         window.location.hash = '#course-progress-tab'
-      @setState activeTab: '#course-progress-tab'
+      @state.set activeTab: '#course-progress-tab'
     @listenTo @, 'course-select:change', ({ selectedCourse }) ->
-      @setState selectedCourse: selectedCourse
+      @state.set selectedCourse: selectedCourse
 
     @levels = new Levels()
     @levels.fetchForClassroom(classroomID, {data: {project: 'original,concepts'}})
@@ -179,7 +175,7 @@ module.exports = class TeacherClassView extends RootView
     progressData = helper.calculateAllProgress(classroomsStub, @courses, @courseInstances, @students)
     # conceptData: helper.calculateConceptsCovered(classroomsStub, @courses, @campaigns, @courseInstances, @students)
     
-    @setState {
+    @state.set {
       earliestIncompleteLevel
       latestCompleteLevel
       progressData
@@ -188,11 +184,11 @@ module.exports = class TeacherClassView extends RootView
     }
   
   copyCode: ->
-    @$('#join-code-input').val(@state.classCode).select()
+    @$('#join-code-input').val(@state.get('classCode')).select()
     @tryCopy()
 
   copyURL: ->
-    @$('#join-url-input').val(@state.joinURL).select()
+    @$('#join-url-input').val(@state.get('joinURL')).select()
     @tryCopy()
 
   tryCopy: ->
@@ -236,25 +232,25 @@ module.exports = class TeacherClassView extends RootView
     true
 
   sortByName: (e) ->
-    if @state.sortValue is 'name'
-      @state.sortDirection = -@state.sortDirection
+    if @state.get('sortValue') is 'name'
+      @state.set('sortDirection', -@state.get('sortDirection'))
     else
-      @state.sortValue = 'name'
-      @state.sortDirection = 1
+      @state.set('sortValue', 'name')
+      @state.set('sortDirection', 1)
       
-    dir = @state.sortDirection
+    dir = @state.get('sortDirection')
     @students.comparator = (student1, student2) ->
       return (if student1.broadName().toLowerCase() < student2.broadName().toLowerCase() then -dir else dir)
     @students.sort()
 
   sortByProgress: (e) ->
-    if @state.sortValue is 'progress'
-      @state.sortDirection = -@state.sortDirection
+    if @state.get('sortValue') is 'progress'
+      @state.set('sortDirection', -@state.get('sortDirection'))
     else
-      @state.sortValue = 'progress'
-      @state.sortDirection = 1
+      @state.set('sortValue', 'progress')
+      @state.set('sortDirection', 1)
       
-    dir = @state.sortDirection
+    dir = @state.get('sortDirection')
     
     @students.comparator = (student) ->
       #TODO: I would like for this to be in the Level model,
@@ -337,7 +333,7 @@ module.exports = class TeacherClassView extends RootView
       
     assigningToNobody = selectedIDs.length is 0
     
-    @setState errors: { assigningToNobody, assigningToUnenrolled }
+    @state.set errors: { assigningToNobody, assigningToUnenrolled }
     
     @assignCourse courseID, members
     
