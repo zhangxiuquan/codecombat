@@ -186,6 +186,24 @@
     campaign_multiplayer_description: "... in which you code head-to-head against other players."
     campaign_old_multiplayer: "(Deprecated) Old Multiplayer Arenas"
     campaign_old_multiplayer_description: "Relics of a more civilized age. No simulations are run for these older, hero-less multiplayer arenas."
+    
+  code:
+    if: "if"
+    else: "else"
+    elif: "elif"
+    while: "while"
+    loop: "loop"
+    for: "for"
+    break: "break"
+    continue: "continue"
+    then: "then"
+    do: "do"
+    end: "end"
+    function: "function"
+    def: "def"
+    self: "self"
+    hero: "hero"
+    this: "this"
 
   share_progress_modal:
     blurb: "You’re making great progress! Tell your parent how much you've learned with CodeCombat."
