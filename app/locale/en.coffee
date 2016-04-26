@@ -204,15 +204,6 @@
     self: "self"
     hero: "hero"
     this: "this"
-    Date: "Date" # Globals
-    Vector: "Vector"
-    Array: "Array"
-    Function: "Function"
-    Math: "Math"
-    Number: "Number"
-    Object: "Object"
-    RegExp: "RegExp"
-    String: "String"
     isFinite: "isFinite" # Built-ins
     isNaN: "isNaN"
     parseFloat: "parseFloat"
