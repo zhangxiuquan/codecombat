@@ -46,7 +46,6 @@ module.exports = class SpellTranslationView extends CocoView
     @$el.show().css(@pos)
     
   isIdentifier: (t) ->
-    # TODO: This is actually all tokens
     t and (t.type in ['identifier', 'keyword'] or t.value is 'this')
     
   onMouseMove: (e) =>
