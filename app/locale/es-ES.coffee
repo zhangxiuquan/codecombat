@@ -187,6 +187,42 @@ module.exports = nativeDescription: "español (ES)", englishDescription: "Spanis
     campaign_old_multiplayer: "(Obsoleto) Antiguas Arenas Multijugador"
     campaign_old_multiplayer_description: "Reliquias de una era más civilizada. Ninguna simulación es ejecutada para estas arenas multijugador antiguas y sin héroes."
 
+  code:
+    if: "si" # Keywords
+    else: "más"
+    elif: "más si"
+    while: "mientras"
+    loop: "lazo"
+    for: "por"
+    break: "descanso"
+    continue: "continuar"
+    then: "entonces"
+    do: "hacer"
+    end: "fin"
+    function: "función"
+    def: "definir"
+    self: "yo"
+    hero: "héroe"
+    this: "esta"
+    isFinite: "esFinito" # Built-ins
+    isNaN: "isNaN"
+    parseFloat: "parseFloat"
+    parseInt: "parseInt"
+    decodeURI: "decodeURI"
+    decodeURIComponent: "decodeURIComponent"
+    encodeURI: "encodeURI"
+    encodeURIComponent: "encodeURIComponent"
+    escape: "escape"
+    unescape: "unescape"
+    Infinity: "Infinity"
+    NaN: "NaN"
+    undefined: "undefined"
+    null: "null"
+    Boolean: "Boolean"
+    Error: "Error"
+    arguments: "arguments"
+    
+
   share_progress_modal:
     blurb: "¡Estás progresando bastante bien! Dile a tus padres cuánto has aprendido con CodeCombat."
     email_invalid: "La dirección de correo electrónico no es válida."
@@ -629,6 +665,9 @@ module.exports = nativeDescription: "español (ES)", englishDescription: "Spanis
     restricted_to_certain_heroes: "Solo ciertos heroes pueden jugar este nivel."
 
   skill_docs:
+    function: "función" # skill types
+    method: "método"
+    snippet: "retazo"
 #    writable: "writable" # Hover over "attack" in Your Skills while playing a level to see most of this
     read_only: "Solo lectura"
     action: "Acción"
