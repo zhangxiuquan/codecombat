@@ -144,11 +144,11 @@ module.exports =
           for user in students.models
             userID = user.id
             courseProgress = progressData[classroom.id][course.id]
-            courseProgress[userID] ?= { completed: true, started: false } # Only set it the first time through a user
+            courseProgress[userID] ?= { completed: true, started: false, levelsCompleted: 0 } # Only set it the first time through a user
             courseProgress[levelID][userID] = { completed: true, started: false } # These don't matter, will always be set
             session = _.find classroom.sessions.models, (session) ->
               session.get('creator') is userID and session.get('level').original is levelID
-
+            
             if not session # haven't gotten to this level yet, but might have completed others before
               courseProgress.started ||= false #no-op
               courseProgress.completed = false
@@ -163,9 +163,11 @@ module.exports =
               courseProgress[userID].started = true
               courseProgress[levelID].started = true
               courseProgress[levelID][userID].started = true
+              courseProgress[levelID][userID].lastPlayed = session.changed
             if session?.completed() # have finished this level
               courseProgress.completed &&= true #no-op
-              courseProgress[userID].completed = true
+              courseProgress[userID].completed &&= true #no-op
+              courseProgress[userID].levelsCompleted += 1
               courseProgress[levelID].completed &&= true #no-op
               courseProgress[levelID][userID].completed = true
             else # level started but not completed

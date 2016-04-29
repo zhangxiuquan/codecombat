@@ -202,11 +202,14 @@ mixin studentRow(student)
         +longLevelName(student.latestCompleteLevel)
     td
       if state.progressData
-        each course, index in view.courses.models
+        each trimCourse, index in view.classroom.get('courses')
+          - var course = view.courses.get(trimCourse._id);
           - var instance = view.courseInstances.findWhere({ courseID: course.id, classroomID: classroom.id })
           if instance && instance.hasMember(student)
             - var progress = state.progressData.get({ classroom: view.classroom, course: course, user: student })
-            +progressDot(progress, 'CS' + (index+1))
+            - var levelsTotal = trimCourse.levels.length
+            //- - var level = ???
+            +studentCourseProgressDot(progress, levelsTotal, level, 'CS' + (index+1))
       unless student.isEnrolled()
         +enrollStudentButton(student)
     //- td
@@ -284,7 +287,7 @@ mixin courseOverview
     .course-overview-progress
       each level, index in levels
         - var progress = state.progressData.get({ classroom: view.classroom, course: course, level: level })
-        +progressDot(progress, index+1)
+        +studentLevelProgressDot(progress, index+1)
 
 mixin studentLevelsRow(student)
   .student-levels-row.alternating-background
@@ -296,14 +299,22 @@ mixin studentLevelsRow(student)
       - var levels = view.classroom.getLevels({courseID: course.id, withoutLadderLevels: true}).models
       each level, index in levels
         - var progress = state.progressData.get({ classroom: view.classroom, course: course, level: level, user: student })
-        +progressDot(progress, index+1)
-
-mixin progressDot(progress, label)
+        +studentLevelProgressDot(progress, index+1)
+  
+mixin studentCourseProgressDot(progress, levelsTotal, level, label)
   //- TODO: Refactor with TeacherClassesView jade
   //- TODO: Give classes abbreviations instead of using index?
-  //- TODO: inefficient. Cache this in the view?
   - dotClass = progress.completed ? 'forest' : (progress.started ? 'gold' : '');
-  .progress-dot(class=dotClass, data-html='true', data-title=view.progressDotTemplate(progressDotContext) data-toggle='tooltip')
+  - _.assign(progress, { levelsTotal: levelsTotal })
+  //- - levelName = level.get('name')
+  .progress-dot(class=dotClass, data-html='true', data-title=view.singleStudentCourseProgressDotTemplate(progress))
+    +progressDotLabel(label)
+    
+mixin studentLevelProgressDot(progress, label)
+  //- TODO: Refactor with TeacherClassesView jade
+  //- TODO: Give classes abbreviations instead of using index?
+  - dotClass = progress.completed ? 'forest' : (progress.started ? 'gold' : '');
+  .progress-dot.level-progress-dot(class=dotClass, data-html='true', data-title=view.singleStudentLevelProgressDotTemplate(progress))
     +progressDotLabel(label)
 
 mixin progressDotLabel(label)

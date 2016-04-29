@@ -1,0 +1,30 @@
+//- if completed
+//-   .small-details
+//-     span= levelIndex+1
+//-     span.spr . 
+//-     span= levelName
+//-   .small-details
+//-     //- span.spr(data-i18n='teacher.last_played')
+//-     //-   | Last played
+//-     //- span= new Date(lastPlayed).toLocaleString()
+//-     //- //- span.spr(data-i18n='teacher.completed')
+//-     //- //-   | Completed
+//-     //- //- span= new Date(dateCompleted).toLocaleString()
+//-   //- .small-details
+//-   //-   i(data-i18n='click_to_view_solution')
+//-   //-     | click to view solution
+//- else if started
+//-   .small-details
+//-     span= levelIndex+1
+//-     span.spr . 
+//-     span= levelName
+//-   .small-details
+//-     //- span.spr(data-i18n='teacher.last_played')
+//-     //-   | Last played
+//-     //- span= new Date(lastPlayed).toLocaleString()
+//-   //- .small-details
+//-   //-   i(data-i18n='click_to_view_progress')
+//-   //-     | click to view progress
+//- else
+//-   span.small-details(data-i18n='teacher.no_progress')
+//-     | No progress

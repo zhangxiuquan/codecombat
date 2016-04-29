@@ -72,7 +72,8 @@ module.exports = class TeacherClassView extends RootView
 
   initialize: (options, classroomID) ->
     super(options)
-    @progressDotTemplate = require 'templates/courses/progress-dot'
+    @singleStudentCourseProgressDotTemplate = require 'templates/teachers/hovers/progress-dot-single-student-course'
+    @singleStudentLevelProgressDotTemplate = require 'templates/teachers/hovers/progress-dot-single-student-level'
     
     @state = new State(@getInitialState())
     window.location.hash = @state.get('activeTab') # TODO: Don't push to URL history (maybe don't use url fragment for default tab)
@@ -159,6 +160,14 @@ module.exports = class TeacherClassView extends RootView
     @removeDeletedStudents() # TODO: Move this to mediator listeners? For both classroom and students?
     @calculateProgressAndLevels()
     super()
+  
+  afterRender: ->
+    $('.progress-dot').each (i, el) ->
+      dot = $(el)
+      dot.tooltip({
+        html: true
+        container: dot
+      })
     
   calculateProgressAndLevels: ->
     return unless @supermodel.progress is 1
