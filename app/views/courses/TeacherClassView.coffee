@@ -85,7 +85,7 @@ module.exports = class TeacherClassView extends RootView
     @supermodel.trackModel(@classroom)
     
     @students = new Users()
-    @listenTo @classroom, 'sync', ->
+    @listenToOnce @classroom, 'sync', ->
       jqxhrs = @students.fetchForClassroom(@classroom, removeDeleted: true)
       if jqxhrs.length > 0
         @supermodel.trackCollection(@students)
