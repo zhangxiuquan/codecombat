@@ -167,7 +167,8 @@ module.exports = class TeacherClassView extends RootView
       dot.tooltip({
         html: true
         container: dot
-      })
+      }).delegate '.tooltip', 'mousemove', ->
+        dot.tooltip('hide')
     
   calculateProgressAndLevels: ->
     return unless @supermodel.progress is 1
