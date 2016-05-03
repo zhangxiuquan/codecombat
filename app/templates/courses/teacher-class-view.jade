@@ -285,7 +285,7 @@ mixin courseOverview
     .course-overview-progress
       each level, index in levels
         - var progress = state.progressData.get({ classroom: view.classroom, course: course, level: level })
-        +studentLevelProgressDot(progress, level, index+1)
+        +allStudentsLevelProgressDot(progress, level, index+1)
 
 mixin studentLevelsRow(student)
   .student-levels-row.alternating-background
@@ -306,6 +306,13 @@ mixin studentCourseProgressDot(progress, levelsTotal, level, label)
   - _.assign(progress, { levelsTotal: levelsTotal })
   .progress-dot(class=dotClass, data-html='true', data-title=view.singleStudentCourseProgressDotTemplate(progress))
     +progressDotLabel(label)
+
+mixin allStudentsLevelProgressDot(progress, level, levelNumber)
+  - dotClass = progress.completed ? 'forest' : (progress.started ? 'gold' : '');
+  - levelName = level.get('name')
+  - context = _.merge(progress, { levelName: levelName, levelNumber: levelNumber, numStudents: view.students.length })
+  .progress-dot.level-progress-dot(class=dotClass, data-html='true', data-title=view.allStudentsLevelProgressDotTemplate(context))
+    +progressDotLabel(levelNumber)
     
 mixin studentLevelProgressDot(progress, level, levelNumber)
   //- TODO: Refactor with TeacherClassesView jade

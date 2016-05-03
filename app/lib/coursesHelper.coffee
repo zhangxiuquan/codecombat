@@ -142,7 +142,8 @@ module.exports =
           progressData[classroom.id][course.id][levelID] = {
             completed: students.size() > 0,
             started: false
-            dateFirstCompleted: new Date(0) # Any real data will always be after this
+            numStarted: 0
+            # numCompleted: 0
           }
           
           for user in students.models
@@ -168,21 +169,17 @@ module.exports =
               courseProgress[userID].started = true
               courseProgress[levelID].started = true
               courseProgress[levelID][userID].started = true
-              lastPlayed = new Date(session.get('changed'))
-              if not courseProgress[levelID].lastPlayed or courseProgress[levelID].lastPlayed < lastPlayed
-                courseProgress[levelID].lastPlayed = lastPlayed
-              courseProgress[levelID][userID].lastPlayed = lastPlayed
+              courseProgress[levelID][userID].lastPlayed = new Date(session.get('changed'))
+              courseProgress[levelID].numStarted += 1
             
             if session?.completed() # have finished this level
               courseProgress.completed &&= true #no-op
               courseProgress[userID].completed &&= true #no-op
               courseProgress[userID].levelsCompleted += 1
               courseProgress[levelID].completed &&= true #no-op
+              # courseProgress[levelID].numCompleted += 1
               courseProgress[levelID][userID].completed = true
-              dateFirstCompleted = new Date(session.get('dateFirstCompleted'))
-              if courseProgress[levelID].dateFirstCompleted < dateFirstCompleted
-                courseProgress[levelID].dateFirstCompleted = dateFirstCompleted
-              courseProgress[levelID][userID].dateFirstCompleted = dateFirstCompleted
+              courseProgress[levelID][userID].dateFirstCompleted = new Date(session.get('dateFirstCompleted'))
             else # level started but not completed
               courseProgress.completed = false
               courseProgress[userID].completed = false

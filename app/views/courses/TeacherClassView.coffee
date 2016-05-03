@@ -74,6 +74,7 @@ module.exports = class TeacherClassView extends RootView
     super(options)
     @singleStudentCourseProgressDotTemplate = require 'templates/teachers/hovers/progress-dot-single-student-course'
     @singleStudentLevelProgressDotTemplate = require 'templates/teachers/hovers/progress-dot-single-student-level'
+    @allStudentsLevelProgressDotTemplate = require 'templates/teachers/hovers/progress-dot-all-students-single-level'
     
     @state = new State(@getInitialState())
     window.location.hash = @state.get('activeTab') # TODO: Don't push to URL history (maybe don't use url fragment for default tab)
