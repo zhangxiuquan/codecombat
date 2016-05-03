@@ -139,7 +139,11 @@ module.exports =
         levels = classroom.getLevels({courseID: course.id, withoutLadderLevels: true})
         for level in levels.models
           levelID = level.get('original')
-          progressData[classroom.id][course.id][levelID] = { completed: students.size() > 0, started: false }
+          progressData[classroom.id][course.id][levelID] = {
+            completed: students.size() > 0,
+            started: false
+            dateFirstCompleted: new Date(0) # Any real data will always be after this
+          }
           
           for user in students.models
             userID = user.id
@@ -158,23 +162,34 @@ module.exports =
               courseProgress[levelID].completed = false
               courseProgress[levelID][userID].started = false
               courseProgress[levelID][userID].completed = false
+              
             if session # have gotten to the level and at least started it
               courseProgress.started = true
               courseProgress[userID].started = true
               courseProgress[levelID].started = true
               courseProgress[levelID][userID].started = true
-              courseProgress[levelID][userID].lastPlayed = session.changed
+              lastPlayed = new Date(session.get('changed'))
+              if not courseProgress[levelID].lastPlayed or courseProgress[levelID].lastPlayed < lastPlayed
+                courseProgress[levelID].lastPlayed = lastPlayed
+              courseProgress[levelID][userID].lastPlayed = lastPlayed
+            
             if session?.completed() # have finished this level
               courseProgress.completed &&= true #no-op
               courseProgress[userID].completed &&= true #no-op
               courseProgress[userID].levelsCompleted += 1
               courseProgress[levelID].completed &&= true #no-op
               courseProgress[levelID][userID].completed = true
+              dateFirstCompleted = new Date(session.get('dateFirstCompleted'))
+              if courseProgress[levelID].dateFirstCompleted < dateFirstCompleted
+                courseProgress[levelID].dateFirstCompleted = dateFirstCompleted
+              courseProgress[levelID][userID].dateFirstCompleted = dateFirstCompleted
             else # level started but not completed
               courseProgress.completed = false
               courseProgress[userID].completed = false
               courseProgress[levelID].completed = false
               courseProgress[levelID][userID].completed = false
+              courseProgress[levelID].dateFirstCompleted = null
+              courseProgress[levelID][userID].dateFirstCompleted = null
 
     _.assign(progressData, progressMixin)
     return progressData

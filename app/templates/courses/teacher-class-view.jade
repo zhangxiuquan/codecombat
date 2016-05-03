@@ -273,9 +273,7 @@ mixin courseProgressTab
                   .enroll-student-button.btn.btn-md.btn-navy.pull-right(data-user-id=student.id)
                     span(data-i18n='TODO')
                       | Enroll Student
-          
-      
-        
+
 mixin courseOverview
   - var course = state.selectedCourse
   - var levels = view.classroom.getLevels({courseID: course.id, withoutLadderLevels: true}).models
@@ -287,7 +285,7 @@ mixin courseOverview
     .course-overview-progress
       each level, index in levels
         - var progress = state.progressData.get({ classroom: view.classroom, course: course, level: level })
-        +studentLevelProgressDot(progress, index+1)
+        +studentLevelProgressDot(progress, level, index+1)
 
 mixin studentLevelsRow(student)
   .student-levels-row.alternating-background
@@ -299,23 +297,23 @@ mixin studentLevelsRow(student)
       - var levels = view.classroom.getLevels({courseID: course.id, withoutLadderLevels: true}).models
       each level, index in levels
         - var progress = state.progressData.get({ classroom: view.classroom, course: course, level: level, user: student })
-        +studentLevelProgressDot(progress, index+1)
+        +studentLevelProgressDot(progress, level, index+1)
   
 mixin studentCourseProgressDot(progress, levelsTotal, level, label)
   //- TODO: Refactor with TeacherClassesView jade
   //- TODO: Give classes abbreviations instead of using index?
   - dotClass = progress.completed ? 'forest' : (progress.started ? 'gold' : '');
   - _.assign(progress, { levelsTotal: levelsTotal })
-  //- - levelName = level.get('name')
   .progress-dot(class=dotClass, data-html='true', data-title=view.singleStudentCourseProgressDotTemplate(progress))
     +progressDotLabel(label)
     
-mixin studentLevelProgressDot(progress, label)
+mixin studentLevelProgressDot(progress, level, levelNumber)
   //- TODO: Refactor with TeacherClassesView jade
-  //- TODO: Give classes abbreviations instead of using index?
   - dotClass = progress.completed ? 'forest' : (progress.started ? 'gold' : '');
-  .progress-dot.level-progress-dot(class=dotClass, data-html='true', data-title=view.singleStudentLevelProgressDotTemplate(progress))
-    +progressDotLabel(label)
+  - levelName = level.get('name')
+  - context = _.merge(progress, { levelName: levelName, levelNumber: levelNumber })
+  .progress-dot.level-progress-dot(class=dotClass, data-html='true', data-title=view.singleStudentLevelProgressDotTemplate(context))
+    +progressDotLabel(levelNumber)
 
 mixin progressDotLabel(label)
   .dot-label.text-center
