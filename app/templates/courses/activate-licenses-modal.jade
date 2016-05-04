@@ -52,12 +52,13 @@ block modal-body-content
         = state.get('error')
     
     #submit-form-area.text-center
+      p.small-details.not-enough-enrollments(class=(tooManySelected ? 'visible' : ''))
+        span(data-i18n='teacher.not_enough_enrollments')
+      
       p.small-details
         span.spr(data-i18n="courses.enrollment_credits_available")
         span#total-available= view.prepaids.totalAvailable()
 
-      p.small-details.not-enough-enrollments(class=(tooManySelected ? 'visible' : ''))
-        span(data-i18n='teacher.not_enough_enrollments')
       p
         button#activate-licenses-btn.btn.btn-lg.btn-primary(type="submit" class=(tooManySelected ? 'disabled' : ''))
           span.spr(data-i18n="courses.enroll")
