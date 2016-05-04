@@ -137,7 +137,7 @@ module.exports = class CocoView extends Backbone.View
     context._ = _
     context.document = document
     context.i18n = utils.i18n
-    context.state = @state?.attributes
+    context.state = @state
     context
 
   afterRender: ->

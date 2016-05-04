@@ -282,21 +282,25 @@ module.exports = class TeacherClassView extends RootView
     userID = $(e.currentTarget).data('user-id')
     user = @students.get(userID)
     selectedUsers = new Users([user])
-    modal = new ActivateLicensesModal { @classroom, selectedUsers, users: @students }
-    @openModalView(modal)
-    modal.once 'redeem-users', =>
-      # TODO: Have the modal pass back the users instead of updating the collection itself?
-      null
-    application.tracker?.trackEvent 'Classroom started enroll students', category: 'Courses'
-
+    @enrollStudents(selectedUsers)
+  
   onClickBulkEnroll: ->
     courseID = @$('.bulk-course-select').val()
     courseInstance = @courseInstances.findWhere({ courseID, classroomID: @classroom.id })
     userIDs = @getSelectedStudentIDs().toArray()
     selectedUsers = new Users(@students.get(userID) for userID in userIDs)
+    @enrollStudents(selectedUsers)
+    
+  enrollStudents: (selectedUsers) ->
     modal = new ActivateLicensesModal { @classroom, selectedUsers, users: @students }
     @openModalView(modal)
-    modal.once 'redeem-users', -> document.location.reload()
+    modal.once 'redeem-users', (enrolledUsers) =>
+      enrolledUsers.each (newUser) =>
+        user = @students.get(newUser.id)
+        if user
+          console.log "Updating user #{user.get('name')} with ", newUser.attributes
+          user.set(newUser.attributes)
+      null
     application.tracker?.trackEvent 'Classroom started enroll students', category: 'Courses'
 
   onClickExportStudentProgress: ->
