@@ -38,7 +38,6 @@ module.exports = class ActivateLicensesModal extends ModalView
     @classrooms.fetchMine({
       data: {archived: false}
       success: =>
-        console.log this
         @classrooms.each (classroom) =>
           classroom.users = new Users()
           jqxhrs = classroom.users.fetchForClassroom(classroom, { removeDeleted: true })
@@ -49,11 +48,9 @@ module.exports = class ActivateLicensesModal extends ModalView
     @listenTo @state, 'change', @render
     @listenTo @state.get('selectedUsers'), 'change add remove reset', ->
       @state.set { visibleSelectedUsers: new Users(@state.get('selectedUsers').filter (u) => @users.get(u)) }
-      console.log "Updating visible selected users and rendering"
       @render()
     @listenTo @users, 'change add remove reset', ->
       @state.set { visibleSelectedUsers: new Users(@state.get('selectedUsers').filter (u) => @users.get(u)) }
-      console.log "Updating visible selected users and rendering"
       @render()
     @listenTo @prepaids, 'sync add remove', ->
       @state.set {
@@ -68,10 +65,8 @@ module.exports = class ActivateLicensesModal extends ModalView
     userID = $(e.currentTarget).data('user-id')
     user = @users.get(userID)
     if @state.get('selectedUsers').contains(user)
-      console.log "Removing user: #{user.broadName()}"
       @state.get('selectedUsers').remove(user)
     else
-      console.log "Adding user: #{user.broadName()}"
       @state.get('selectedUsers').add(user)
     # @render() # TODO: Have @state automatically listen to children's change events?
   

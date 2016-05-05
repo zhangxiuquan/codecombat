@@ -298,7 +298,6 @@ module.exports = class TeacherClassView extends RootView
       enrolledUsers.each (newUser) =>
         user = @students.get(newUser.id)
         if user
-          console.log "Updating user #{user.get('name')} with ", newUser.attributes
           user.set(newUser.attributes)
       null
     application.tracker?.trackEvent 'Classroom started enroll students', category: 'Courses'
