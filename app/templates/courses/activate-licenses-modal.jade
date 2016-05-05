@@ -10,6 +10,7 @@ block modal-body-content
   - var numToEnroll = state.get('visibleSelectedUsers').length
   - var unusedEnrollments = view.prepaids.totalMaxRedeemers() - view.prepaids.totalRedeemers()
   - var tooManySelected = numToEnroll > unusedEnrollments
+  - var noneSelected = numToEnroll == 0
   
   if view.classrooms.length > 1
     .row
@@ -60,7 +61,7 @@ block modal-body-content
         span#total-available= view.prepaids.totalAvailable()
 
       p
-        button#activate-licenses-btn.btn.btn-lg.btn-primary(type="submit" class=(tooManySelected ? 'disabled' : ''))
+        button#activate-licenses-btn.btn.btn-lg.btn-primary(type="submit" class=(tooManySelected || noneSelected ? 'disabled' : ''))
           span.spr(data-i18n="courses.enroll")
           | (
           span#total-selected-span
