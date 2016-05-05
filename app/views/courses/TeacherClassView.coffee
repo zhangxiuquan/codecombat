@@ -101,6 +101,10 @@ module.exports = class TeacherClassView extends RootView
     @courseInstances.fetchForClassroom(classroomID)
     @supermodel.trackCollection(@courseInstances)
     
+    @levels = new Levels()
+    @levels.fetchForClassroom(classroomID, {data: {project: 'original,concepts'}})
+    @supermodel.trackCollection(@levels)
+    
     @attachMediatorEvents()
       
   attachMediatorEvents: () ->
@@ -146,10 +150,6 @@ module.exports = class TeacherClassView extends RootView
       @state.set activeTab: '#course-progress-tab'
     @listenTo @, 'course-select:change', ({ selectedCourse }) ->
       @state.set selectedCourse: selectedCourse
-
-    @levels = new Levels()
-    @levels.fetchForClassroom(classroomID, {data: {project: 'original,concepts'}})
-    @supermodel.trackCollection(@levels)
 
   setCourseMembers: =>
     for course in @courses.models
@@ -309,10 +309,10 @@ module.exports = class TeacherClassView extends RootView
       concepts = []
       for course, index in @courses.models
         instance = @courseInstances.findWhere({ courseID: course.id, classroomID: @classroom.id })
-        if instance && instance.hasMember(student)
+        if instance and instance.hasMember(student)
           # TODO: @levels collection is for the classroom, and not per-course
           for level, index in @levels.models
-            progress = @progressData.get({ classroom: @classroom, course: course, level: level, user: student })
+            progress = @state.get('progressData').get({ classroom: @classroom, course: course, level: level, user: student })
             concepts.push(level.get('concepts') ? []) if progress?.completed
       concepts = _.union(_.flatten(concepts))
       conceptsString = _.map(concepts, (c) -> $.i18n.t("concepts." + c)).join(', ')
