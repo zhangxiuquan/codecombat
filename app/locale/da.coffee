@@ -57,18 +57,13 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
     real_game: "Et rigtigt spil, spillet med rigtig programmering."
     great_game: "Et godt spil er mere end blot badges og achievements - det handler om en spillers rejse, veldesignede gåder, og evnen til at tackle udfordringer med rammer og tillid."
     agency: "CodeCombat er et spil, der giver spillerne rammerne og en tillid til vores robuste kodefortolkermotor, som hjælper begyndere og avancerede elever med både skrive ordentligt og korrekt kode."
-    curious: "Nysgerrig? Anmod om en demo, og vi vil vise jer hvordan"
     request_demo_title: "Få dine elever i gang i dag!"
     request_demo_subtitle: "Anmod om en demo og få dine elever i gang på mindre end en time."
     get_started_title: "Opsæt din klasse i dag"
     get_started_subtitle: "Opsæt en klasse, tilføj dine elever, og overvåg deres fremgang når de lærer datalogi."
-    create_class: "Eller opret en klasse og se det selv!"
-    teacher_screenshots_hint: "Elever skriver kode og se deres ændringer i realtid"
     request_demo: "Anmod demo"
-    create_a_class: "Opret klasse"
     setup_a_class: "Opsæt klasse"
     have_an_account: "Har du allerede en konto?"
-    log_in: "Log ind"
     logged_in_as: "Du er i øjeblikket logget ind som"
     view_my_classes: "Se mine klasser"
     computer_science: "Datalogikurser for alle aldre"
@@ -92,10 +87,8 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
     start_playing_for_free: "Start med at spille gratis!"
     students_and_players: "Elever & Spillere"
     goto_classes: "Gå til mine Klasser" # {change}
-    educator_wiki: "Underviser wiki"
     view_profile: "Vis Min Profil"
 #    view_progress: "View Progress"
-    login_switch: "Har du en konto?"
     check_out_wiki: "Tjek vores nye pædagog Wiki"
     want_coco: "Ønsker du CodeCombat på din skole?"
     form_select_role: "Vælg primær rolle"
@@ -109,6 +102,7 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
     blog: "Blog"
     forum: "Forum"
     account: "Konto"
+#    my_account: "My Account"
     profile: "Profil"
     stats: "Statistik"
     code: "Kode"
@@ -189,22 +183,54 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
     campaign_old_multiplayer_description: "Levn fra en mere civiliseret tid. Ingen simuleringer er kørt for disse ældre, helte-fattige multiplayer arenaer."
 
 #  code:
-#    if: "if" # Keywords
+#    if: "if" # Keywords--these translations show up on hover, so please translate them all, even if it's kind of long. (In the code editor, they will still be in English.)
 #    else: "else"
-#    elif: "elif"
+#    elif: "else if"
 #    while: "while"
 #    loop: "loop"
 #    for: "for"
 #    break: "break"
 #    continue: "continue"
+#    pass: "pass"
+#    return: "return"
 #    then: "then"
 #    do: "do"
 #    end: "end"
 #    function: "function"
-#    def: "def"
+#    def: "define"
+#    var: "variable"
 #    self: "self"
 #    hero: "hero"
 #    this: "this"
+#    or: "or"
+#    "||": "or"
+#    and: "and"
+#    "&&": "and"
+#    not: "not"
+#    "!": "not"
+#    "=": "assign"
+#    "==": "equals"
+#    "===": "strictly equals"
+#    "!=": "does not equal"
+#    "!==": "does not strictly equal"
+#    ">": "is greater than"
+#    ">=": "is greater than or equal"
+#    "<": "is less than"
+#    "<=": "is less than or equal"
+#    "*": "multiplied by"
+#    "/": "divided by"
+#    "+": "plus"
+#    "-": "minus"
+#    "+=": "add and assign"
+#    "-=": "subtract and assign"
+#    True: "True"
+#    true: "true"
+#    False: "False"
+#    false: "false"
+#    undefined: "undefined"
+#    null: "null"
+#    nil: "nil"
+#    None: "None"
 
   share_progress_modal:
     blurb: "Du gør godt fremskridt! Fortæl din forælder hvor meget du har lært med CodeCombat."
@@ -552,9 +578,9 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
 
   subscribe:
     comparison_blurb: "Skærp dine færdigheder med et CodeCombat abonnement!"
-    feature1: "$t(data.levelsCount)+ grundlæggende baner på tværs af $t(data.worldsCount) verdener" # {change}
-    feature2: "$t(data.heroesCount) magtfulde <strong> nye helte </strong> med unikke færdigheder!" # {change}
-    feature3: "$t(data.bonusLevelsCount)+ bonus baner" # {change}
+    feature1: "__levelsCount__+ grundlæggende baner på tværs af __worldsCount__ verdener" # {change}
+    feature2: "__heroesCount__ magtfulde <strong> nye helte </strong> med unikke færdigheder!" # {change}
+    feature3: "__bonusLevelsCount__+ bonus baner" # {change}
     feature4: "<strong>{{gems}} bonus ædelstene</strong> every month!"
     feature5: "Video tutorials"
     feature6: "Premium e-mail support"
@@ -622,6 +648,7 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
     clojure_blurb: "En moderne version af Lisp."
     lua_blurb: "Spil scripting sprog."
     io_blurb: "Simpelt men obskurt."
+#    java_blurb: "(Subscriber Only) Android and enterprise."
     status: "Status"
     hero_type: "Type"
     weapons: "Våben"
@@ -702,9 +729,7 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
     main_description: "Hos CodeCombat er vores opgave at sikre, at du gør det med et smil på læben."
     mission_link: "Mission"
     team_link: "Hold"
-    community_link: "Fællesskab"
     story_link: "Baggrund"
-    careers_link: "Karriere"
     press_link: "Pressen"
     mission_title: "Vores mission: At gøre programmering tilgængelig for alle elever på Jorden."
     mission_description_1: "<strong>Programmering er magi</strong>. Det er evnen til at skabe ting fra ren fantasi. Vi startede CodeCombat for at give eleverne en fornemmelse af troldmandsmagt lige ved hånden ved hjælp af <strong>indtastet kode</strong>."
@@ -757,9 +782,6 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
     jobs_title: "Kom og arbejd hos os og hjælp med at skrive CodeCombat historie!"
     jobs_subtitle: "Kan du ikke finde den rette mulighed, men er interesseret i at holde kontakten? Se vores \"Lav Dit Eget\" liste."
     jobs_benefits: "Personalegoder"
-    jobs_benefit_1: "Konkurrencedygtig løn og optioner"
-    jobs_benefit_2: "15 dages minimum feriepolitik, eksklusiv firmafridage"
-    jobs_benefit_3: "Fleksibilitet ved at arbejde hjemmefra" # {change}
     jobs_benefit_4: "Ubegrænset antal syge- eller personligedage" # {change}
     jobs_benefit_5: "Faglig udvikling og hjælp til efteruddannelse" # {change}
     jobs_benefit_6: "Syge-, Tand- og Synsforsikring" # {change}
@@ -833,6 +855,7 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
     thanks_header: "Tak for at anmode om en demo!" # {change}
 #    thanks_sub_header: "Thanks for expressing interest in CodeCombat for your school."
     thanks_p: "Vi vil snart tage kontakt. Spørgsmål? Email os:" # {change}
+#    back_to_classes: "Back to Classes"
 #    finish_signup: "Finish creating your teacher account:"
 #    finish_signup_p: "Create an account to set up a class, add your students, and monitor their progress as they learn computer science."
 #    signup_with: "Sign up with:"
@@ -1240,6 +1263,7 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
     length: "Varighed:"
     title: "Titel" # Flat style redesign
 #    subtitle: "Review course guidelines, solutions, and levels"
+#    changelog: "View latest changes to course levels."
 #    select_language: "Select language"
 #    select_level: "Select level"
 #    play_level: "Play Level"
@@ -1247,7 +1271,7 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
 #    print_guide: "Print Guide (PDF)"
 #    view_guide_online: "View Guide Online (PDF)"
 #    last_updated: "Last updated:"
-#    grants_lifetime_access: "Grants lifetime access to all Courses." # New enrollment modal
+#    grants_lifetime_access: "Grants access to all Courses."
 #    enrollment_credits_available: "Enrollment Credits Available:"
     description: "Beskrivelse" # ClassroomSettingsModal
 #    language_select: "Select a language"
@@ -1292,6 +1316,7 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
 #    view_class: "view class"
 #    archive_class: "archive class"
 #    unarchive_class: "unarchive class"
+#    unarchive_this_class: "Unarchive this class"
 #    no_students_yet: "This class has no students yet."
 #    add_students: "Add Students"
 #    create_new_class: "Create a New Class"
@@ -1300,6 +1325,7 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
 #    total_playtime: "Total play time"
 #    avg_completed: "Average levels completed"
 #    total_completed: "Total levels completed"
+#    created: "Created"
 #    concepts_covered: "Concepts covered"
 #    earliest_incomplete: "Earliest incomplete level"
 #    latest_complete: "Latest completed level"
@@ -1312,6 +1338,10 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
 #    latest_completed: "Latest Completed"
 #    sort_by: "Sort by"
 #    progress: "Progress"
+#    completed: "Completed"
+#    started: "Started"
+#    click_to_view_progress: "click to view progress"
+#    no_progress: "No progress"
 #    select_course: "Select course to view"
 #    course_overview: "Course Overview"
 #    copy_class_code: "Copy Class Code"
@@ -1347,6 +1377,7 @@ module.exports = nativeDescription: "dansk", englishDescription: "Danish", trans
 #    how_to_enroll_blurb_3: "Once a student is enrolled, they will have access to all of the course content."
 #    bulk_pricing_blurb: "Purchasing for more than 25 students? Contact us to discuss next steps."
 #    total_unenrolled: "Total unenrolled"
+#    export_student_progress: "Export Student Progress (CSV)"
 
   classes:
     archmage_title: "Ærkemager"

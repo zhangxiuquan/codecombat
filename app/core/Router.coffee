@@ -39,10 +39,17 @@ module.exports = class CocoRouter extends Backbone.Router
     'admin/level-sessions': go('admin/LevelSessionsView')
     'admin/users': go('admin/UsersView')
     'admin/base': go('admin/BaseView')
+    'admin/demo-requests': go('admin/DemoRequestsView')
     'admin/trial-requests': go('admin/TrialRequestsView')
     'admin/user-code-problems': go('admin/UserCodeProblemsView')
     'admin/pending-patches': go('admin/PendingPatchesView')
     'admin/codelogs': go('admin/CodeLogsView')
+
+    'artisans': go('artisans/ArtisansView')
+
+    'artisans/level-tasks': go('artisans/LevelTasksView')
+    'artisans/solution-problems': go('artisans/SolutionProblemsView')
+    'artisans/thang-tasks': go('artisans/ThangTasksView')
 
     'beta': go('HomeView')
 
@@ -70,6 +77,7 @@ module.exports = class CocoRouter extends Backbone.Router
     'courses/teachers': redirect('/teachers/classes')
     'courses/purchase': redirect('/teachers/enrollments')
     'courses/enroll(/:courseID)': redirect('/teachers/enrollments')
+    'courses/update-account': go('courses/CoursesUpdateAccountView')
     'courses/:classroomID': go('courses/ClassroomView') #, { studentsOnly: true })
     'courses/:courseID/:courseInstanceID': go('courses/CourseDetailsView')
 
@@ -100,7 +108,9 @@ module.exports = class CocoRouter extends Backbone.Router
 
     'github/*path': 'routeToServer'
 
-    'hoc': go('courses/HourOfCodeView')
+    'hoc': ->
+      # Matching /?hour_of_code=true behavior
+      @navigate "/play", {trigger: true, replace: true}
     'home': go('NewHomeView')
 
     'i18n': go('i18n/I18NHomeView')
@@ -130,6 +140,8 @@ module.exports = class CocoRouter extends Backbone.Router
     'privacy': go('PrivacyView')
 
     'schools': go('NewHomeView')
+    'seen': go('NewHomeView')
+    'SEEN': go('NewHomeView')
 
     'teachers': redirect('/teachers/classes')
     'teachers/classes': go('courses/TeacherClassesView') #, { teachersOnly: true })

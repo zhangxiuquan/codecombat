@@ -154,6 +154,7 @@ module.exports = class PlayLevelView extends RootView
   isCourseMode: -> @courseID and @courseInstanceID
 
   showAds: ->
+    return false # No ads for now.
     if application.isProduction() && !me.isPremium() && !me.isTeacher() && !window.serverConfig.picoCTF && !@isCourseMode()
       return me.getCampaignAdsGroup() is 'leaderboard-ads'
     false
@@ -362,6 +363,15 @@ module.exports = class PlayLevelView extends RootView
 
   onLevelStarted: ->
     return unless @surface?
+
+    #TODO: Remove this at some point
+    if @session.get('codeLanguage') in ['clojure', 'io']
+      problem =
+        aetherProblem:
+          message: "Sorry, support for #{@session.get('codeLanguage')} has been removed."
+
+      Backbone.Mediator.publish 'tome:show-problem-alert', problem: problem
+
     @loadingView.showReady()
     @trackLevelLoadEnd()
     if window.currentModal and not window.currentModal.destroyed and window.currentModal.constructor isnt VictoryModal

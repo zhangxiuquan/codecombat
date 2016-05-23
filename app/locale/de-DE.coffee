@@ -57,18 +57,13 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
     real_game: "Ein echtes Spiel, gespielt mit echtem programmieren."
     great_game: "In einem guten Spiel geht es um mehr als nur Abzeichen und Erfolge - es geht um die Reise eines Spielers, gut-designte Rätsel, und die Fähigkeit Herausforderungen mit Kraft und Selbsvertrauen anzupacken."
     agency: "CodeCombat ist ein Spiel, das Spielern die Kraft und das Selbstbewusstsein gibt durch unsere robuste Programmiereingabe-Engine, die sowohl Anfänger als auch fortgeschrittenen Schülern dabei hilft richtigen, validen Code zu schreiben."
-    curious: "Neugierig? Fragen Sie nach einer Demo und wir werden Ihnen zeigen wie es geht"
     request_demo_title: "Fangen Sie noch heute mit ihren Schülern an!"
     request_demo_subtitle: "Fragen Sie nach einer Demo und lassen Sie ihre Schüler in weniger als einer Stunde anfangen."
     get_started_title: "Erstellen Sie noch heute ihre Klasse"
     get_started_subtitle: "Erstellen Sie eine Klasse, fügen Sie Schüler hinzu und verfolgen Sie ihren Fortschritt während sie Informatik lernen."
-    create_class: "Oder erstellen Sie eine Klasse und sehen Sie selbst!"
-    teacher_screenshots_hint: "Schüler schreiben Code und ihre Veränderungen werden in Echtzeit sichtbar"
     request_demo: "Demo anfragen"
-    create_a_class: "Erstellen Sie eine Klasse"
     setup_a_class: "Eine Klasse erstellen"
     have_an_account: "Haben Sie bereits einen Account?" # {change}
-    log_in: "Einloggen"
     logged_in_as: "Sie sind zurzeit eingeloggt als"
     view_my_classes: "Zeige meine Klassen"
     computer_science: "Informatikkurse für alle Altersgruppen"
@@ -92,11 +87,9 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
 #    start_playing_for_free: "Start Playing for Free!"
 #    students_and_players: "Students & Players"
 #    goto_classes: "Go to My Classes"
-#    educator_wiki: "Educator wiki"
 #    view_profile: "View My Profile"
 #    view_progress: "View Progress"
-#    login_switch: "Have an account?"
-#    check_out_wiki: "Check out our new educator Wiki"
+#    check_out_wiki: "Check out our new Educator Wiki"
 #    want_coco: "Want CodeCombat at your school?"
 #    form_select_role: "Select primary role"
 #    form_select_range: "Select class size"
@@ -109,6 +102,7 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
     blog: "Blog"
     forum: "Forum"
     account: "Account"
+#    my_account: "My Account"
     profile: "Profil"
     stats: "Statistiken"
     code: "Code"
@@ -189,22 +183,54 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
     campaign_old_multiplayer_description: "Relikte einer eher zivilisierten Zeit. Keine Simulationen laufen hier ab für diese älteren Multiplayerarenas ohne Helden."
 
 #  code:
-#    if: "if" # Keywords
+#    if: "if" # Keywords--these translations show up on hover, so please translate them all, even if it's kind of long. (In the code editor, they will still be in English.)
 #    else: "else"
-#    elif: "elif"
+#    elif: "else if"
 #    while: "while"
 #    loop: "loop"
 #    for: "for"
 #    break: "break"
 #    continue: "continue"
+#    pass: "pass"
+#    return: "return"
 #    then: "then"
 #    do: "do"
 #    end: "end"
 #    function: "function"
-#    def: "def"
+#    def: "define"
+#    var: "variable"
 #    self: "self"
 #    hero: "hero"
 #    this: "this"
+#    or: "or"
+#    "||": "or"
+#    and: "and"
+#    "&&": "and"
+#    not: "not"
+#    "!": "not"
+#    "=": "assign"
+#    "==": "equals"
+#    "===": "strictly equals"
+#    "!=": "does not equal"
+#    "!==": "does not strictly equal"
+#    ">": "is greater than"
+#    ">=": "is greater than or equal"
+#    "<": "is less than"
+#    "<=": "is less than or equal"
+#    "*": "multiplied by"
+#    "/": "divided by"
+#    "+": "plus"
+#    "-": "minus"
+#    "+=": "add and assign"
+#    "-=": "subtract and assign"
+#    True: "True"
+#    true: "true"
+#    False: "False"
+#    false: "false"
+#    undefined: "undefined"
+#    null: "null"
+#    nil: "nil"
+#    None: "None"
 
   share_progress_modal:
     blurb: "Du machst dich gut! Sag deinen Eltern wie viel du mit CodeCombat gelernt hast." # {change}
@@ -552,9 +578,9 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
 
   subscribe:
     comparison_blurb: "Verbessere deine Fähigkeiten mit einem CodeCombat Abonnement"
-    feature1: "$t(data.levelsCount)+ Basislevel in $t(data.worldsCount) Gebieten" # {change}
-    feature2: "$t(data.heroesCount) mächtige <strong>neue Helden</strong> mit einzigartigen Fertigkeiten" # {change}
-    feature3: "$t(data.bonusLevelsCount)+ Bonuslevel" # {change}
+    feature1: "__levelsCount__+ Basislevel in __worldsCount__ Gebieten" # {change}
+    feature2: "__heroesCount__ mächtige <strong>neue Helden</strong> mit einzigartigen Fertigkeiten" # {change}
+    feature3: "__bonusLevelsCount__+ Bonuslevel" # {change}
     feature4: "<strong>{{gems}} Bonusedelsteine</strong> jeden Monat!"
     feature5: "Videoanleitungen"
     feature6: "Premium Emailsupport"
@@ -622,6 +648,7 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
     clojure_blurb: "Ein modernes Lisp."
     lua_blurb: "Skriptsprache für Spiele."
     io_blurb: "Simpel aber obskur."
+#    java_blurb: "(Subscriber Only) Android and enterprise."
     status: "Status"
     hero_type: "Typ"
     weapons: "Waffen"
@@ -702,9 +729,7 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
     main_description: "Bei CodeCombat ist es unser Job das du das mit einem Lächeln im Gesicht tust."
     mission_link: "Mission"
     team_link: "Team"
-    community_link: "Community"
     story_link: "Geschichte"
-    careers_link: "Karrieren"
     press_link: "Presse"
     mission_title: "Unsere Mission: Programmieren jedem Schüler auf der Erde zugänglich zu machen."
     mission_description_1: "<strong>Programmieren ist Magie</strong>. Es ist die Fähigkeit Dinge aus purer Vorstellungskraft zu erschaffen. Wir starteten CodeCombat um Lernen dieses Gefühl der Zauberkraft in ihren Fingerspitzen zu geben während sie <strong>getippten Code</strong> benutzen." # {change}
@@ -757,9 +782,6 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
     jobs_title: "Komm arbeite mit uns und hilf mit CodeCombat Geschichte zu schreiben!"
     jobs_subtitle: "Nichts gutes gefunden aber du bist trotzdem interessiert mit uns zu arbeiten? Schau dir unseren \"Kreiere deinen Eigenen\" Eintrag an."
     jobs_benefits: "Angestellten Vorteile"
-#    jobs_benefit_1: "Competitive salary and options"
-#    jobs_benefit_2: "15 day minimum vacation policy, excluding company holidays"
-#    jobs_benefit_3: "Flex time and flexible work-from-home"
 #    jobs_benefit_4: "Unlimited vacation"
 #    jobs_benefit_5: "Professional development and continuing education support – free books and games!"
 #    jobs_benefit_6: "Medical (gold), dental, vision"
@@ -833,6 +855,7 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
     thanks_header: "Danke dass Sie eine Demo beantragen!" # {change}
 #    thanks_sub_header: "Thanks for expressing interest in CodeCombat for your school."
     thanks_p: "Wir melden uns bald. Fragen? Schreiben Sie uns eine Email:" # {change}
+#    back_to_classes: "Back to Classes"
 #    finish_signup: "Finish creating your teacher account:"
 #    finish_signup_p: "Create an account to set up a class, add your students, and monitor their progress as they learn computer science."
 #    signup_with: "Sign up with:"
@@ -1240,6 +1263,7 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
     length: "Länge:"
     title: "Titel" # Flat style redesign
 #    subtitle: "Review course guidelines, solutions, and levels"
+#    changelog: "View latest changes to course levels."
 #    select_language: "Select language"
 #    select_level: "Select level"
 #    play_level: "Play Level"
@@ -1247,7 +1271,7 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
 #    print_guide: "Print Guide (PDF)"
 #    view_guide_online: "View Guide Online (PDF)"
 #    last_updated: "Last updated:"
-#    grants_lifetime_access: "Grants lifetime access to all Courses." # New enrollment modal
+#    grants_lifetime_access: "Grants access to all Courses."
 #    enrollment_credits_available: "Enrollment Credits Available:"
     description: "Beschreibung" # ClassroomSettingsModal
 #    language_select: "Select a language"
@@ -1292,6 +1316,7 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
 #    view_class: "view class"
 #    archive_class: "archive class"
 #    unarchive_class: "unarchive class"
+#    unarchive_this_class: "Unarchive this class"
 #    no_students_yet: "This class has no students yet."
 #    add_students: "Add Students"
 #    create_new_class: "Create a New Class"
@@ -1300,6 +1325,7 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
 #    total_playtime: "Total play time"
 #    avg_completed: "Average levels completed"
 #    total_completed: "Total levels completed"
+#    created: "Created"
 #    concepts_covered: "Concepts covered"
 #    earliest_incomplete: "Earliest incomplete level"
 #    latest_complete: "Latest completed level"
@@ -1312,6 +1338,10 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
 #    latest_completed: "Latest Completed"
 #    sort_by: "Sort by"
 #    progress: "Progress"
+#    completed: "Completed"
+#    started: "Started"
+#    click_to_view_progress: "click to view progress"
+#    no_progress: "No progress"
 #    select_course: "Select course to view"
 #    course_overview: "Course Overview"
 #    copy_class_code: "Copy Class Code"
@@ -1347,6 +1377,7 @@ module.exports = nativeDescription: "Deutsch (Deutschland)", englishDescription:
 #    how_to_enroll_blurb_3: "Once a student is enrolled, they will have access to all of the course content."
 #    bulk_pricing_blurb: "Purchasing for more than 25 students? Contact us to discuss next steps."
 #    total_unenrolled: "Total unenrolled"
+#    export_student_progress: "Export Student Progress (CSV)"
 
   classes:
     archmage_title: "Erzmagier"

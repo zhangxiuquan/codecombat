@@ -6,13 +6,13 @@ mail = require '../commons/mail'
 log = require 'winston'
 plugins = require '../plugins/plugins'
 AnalyticsUsersActive = require './AnalyticsUsersActive'
+Classroom = require '../models/Classroom'
 languages = require '../routes/languages'
 
 config = require '../../server_config'
 stripe = require('stripe')(config.stripe.secretKey)
 
 sendwithus = require '../sendwithus'
-delighted = require '../delighted'
 
 UserSchema = new mongoose.Schema({
   dateCreated:
@@ -70,6 +70,17 @@ UserSchema.methods.isTeacher = ->
 UserSchema.methods.getUserInfo = ->
   id: @get('_id')
   email: if @get('anonymous') then 'Unregistered User' else @get('email')
+  
+UserSchema.methods.removeFromClassrooms = ->
+  userID = @get('_id')
+  yield Classroom.update(
+    { members: userID }
+    {
+      $addToSet: { deletedMembers: userID }
+      $pull: { members: userID }
+    }
+    { multi: true }
+  )
 
 UserSchema.methods.trackActivity = (activityName, increment) ->
   now = new Date()
@@ -238,7 +249,6 @@ UserSchema.methods.register = (done) ->
         address: @get 'email'
     sendwithus.api.send data, (err, result) ->
       log.error "sendwithus post-save error: #{err}, result: #{result}" if err
-    delighted.addDelightedUser @
   @saveActiveUser 'register'
 
 UserSchema.methods.hasSubscription = ->
