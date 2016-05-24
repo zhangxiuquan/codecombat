@@ -1,29 +1,29 @@
-
-°²×°²½Öè
+ï»¿
+å®‰è£…æ­¥éª¤
 1.github git shell
-2.nodejs 4.4.3×Ô¶¯ÅäÖÃpath
+2.nodejs 4.4.3è‡ªåŠ¨é…ç½®path
 3.npm install npm@2.15.1
-4.Python27ÅäÖÃpath
-5.Visual Studio Express 2015 ±àÒëÆ÷¹ÙÍø
+4.Python27é…ç½®path
+5.Visual Studio Express 2015 ç¼–è¯‘å™¨å®˜ç½‘
 npm config set msvs_version 2012 --globa
-6.mongod 3.2 ÅäÖÃpath
-ĞÂ½¨c:\db£¬
-Æô¶¯·şÎñÆ÷
+6.mongod 3.2 é…ç½®path
+æ–°å»ºc:\dbï¼Œ
+å¯åŠ¨æœåŠ¡å™¨
 mongod --setParameter textSearchEnabled=true --dbpath c:\db
-µ¼ÈëÊı¾İ
+å¯¼å…¥æ•°æ®
 mongorestore --drop dump
-7.ÏÂÔØ
+7.ä¸‹è½½
 git clone https://github.com/zhangxiuquan/codecombat.git
 cd codecombat
-8.°²×°
+8.å®‰è£…
 npm install
-9.ÔËĞĞ
+9.è¿è¡Œ
 npm run dev
 
-ÆäËüÃüÁî
-1.²é¿´ÅäÖÃ
+å…¶å®ƒå‘½ä»¤
+1.æŸ¥çœ‹é…ç½®
 npm config ls -l
-2.Ôö¼ÓgemÔ´
+2.å¢åŠ gemæº
 gem sources -a http://ruby.taobao.org/
-gem°²×° 
+gemå®‰è£… 
 gem install sass
