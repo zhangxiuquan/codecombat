@@ -1,0 +1,29 @@
+
+安装步骤
+1.github git shell
+2.nodejs 4.4.3自动配置path
+3.npm install npm@2.15.1
+4.Python27配置path
+5.Visual Studio Express 2015 编译器官网
+npm config set msvs_version 2012 --globa
+6.mongod 3.2 配置path
+新建c:\db，
+启动服务器
+mongod --setParameter textSearchEnabled=true --dbpath c:\db
+导入数据
+mongorestore --drop dump
+7.下载
+git clone https://github.com/zhangxiuquan/codecombat.git
+cd codecombat
+8.安装
+npm install
+9.运行
+npm run dev
+
+其它命令
+1.查看配置
+npm config ls -l
+2.增加gem源
+gem sources -a http://ruby.taobao.org/
+gem安装 
+gem install sass
