@@ -8,8 +8,8 @@
 npm config set msvs_version 2012 --globa
 6.mongod 3.2 配置path
 新建c:\db，
-启动服务器
-mongod --setParameter textSearchEnabled=true --dbpath c:\db
+启动服务器，http://localhost:27017
+mongod --setParameter textSearchEnabled=true --dbpath E:\codecombatdb
 导入数据
 mongorestore --drop dump
 7.下载
@@ -17,7 +17,7 @@ git clone https://github.com/zhangxiuquan/codecombat.git
 cd codecombat
 8.安装
 npm install
-9.运行
+9.运行，http://localhost:3000
 npm run dev
 
 其它命令
