@@ -13,8 +13,6 @@ module.exports = class MyView extends RootView
 
   onClickMButton: (e) ->
       #查找控件p
-      myl1=document.getElementById("my-l")
-      myl1.innerHTML='dear a'
-      #myl= $('my-l')
-      #myl.text('dear a')
+      #document.getElementById("my-l").innerHTML = 'dear a'
+      @$('#my-l').text('dear a')
       console.log 'dear 你点击按钮'

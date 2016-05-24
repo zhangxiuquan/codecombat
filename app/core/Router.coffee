@@ -19,6 +19,7 @@ module.exports = class CocoRouter extends Backbone.Router
       return @routeDirectly('NewHomeView', [])
 
     'l': go('l/my')
+    'l/game/:levelID': go('play/level/my-game')
 
     'about': go('AboutView')
 
