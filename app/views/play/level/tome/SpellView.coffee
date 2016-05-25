@@ -51,7 +51,7 @@ module.exports = class SpellView extends CocoView
     'playback:ended-changed': 'onPlaybackEndedChanged'
     'level:contact-button-pressed': 'onContactButtonPressed'
     'level:show-victory': 'onShowVictory'
-
+    'l:add-code': 'onAddCode'
   events:
     'mouseout': 'onMouseOut'
 
@@ -751,6 +751,12 @@ module.exports = class SpellView extends CocoView
     if @saveSpadeTimeout?
       window.clearTimeout @saveSpadeTimeout
       @saveSpadeTimeout = null
+  #监听外部添加代码
+  onAddCode: (e) ->
+    console.log '添加代码'
+    lineCount = @aceDoc.getLength()
+    lastLine = @aceDoc.$lines[lineCount - 1]
+    @aceDoc.insertMergedLines {row: lineCount, column: 0} ,[e.code]
 
   onManualCast: (e) ->
     cast = @$el.parent().length
