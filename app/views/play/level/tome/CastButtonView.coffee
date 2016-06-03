@@ -78,8 +78,7 @@ module.exports = class CastButtonView extends CocoView
   onLButtonClick: (e) ->
     console.log '广播一个测试事件l:manual-cast'
     Backbone.Mediator.publish 'l:manual-cast', {}
-    Backbone.Mediator.publish 'l:add-code', {code:'hero.moveRight();'}
-
+    Backbone.Mediator.publish 'l:add-code', {code:"hero.moveRight();"}
 
   onCastRealTimeButtonClick: (e) ->
     if @inRealTimeMultiplayerSession

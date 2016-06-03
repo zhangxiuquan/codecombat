@@ -109,6 +109,11 @@ module.exports = class SpellView extends CocoView
     $(@ace.container).find('.ace_gutter').on 'click mouseenter', '.ace_error, .ace_warning, .ace_info', @onAnnotationClick
     $(@ace.container).find('.ace_gutter').on 'click', @onGutterClick
     @initAutocomplete aceConfig.liveCompletion ? true
+    #禁止编辑代码
+    #$(@ace.container).find('.ace_text-input')
+    #                   .attr("disabled",true)
+    #                   .attr("readonly",true);
+
 
     return if @session.get('creator') isnt me.id or @session.fake
     # Create a Spade to 'dig' into Ace.
@@ -754,9 +759,14 @@ module.exports = class SpellView extends CocoView
   #监听外部添加代码
   onAddCode: (e) ->
     console.log '添加代码'
-    lineCount = @aceDoc.getLength()
-    lastLine = @aceDoc.$lines[lineCount - 1]
-    @aceDoc.insertMergedLines {row: lineCount, column: 0} ,[e.code]
+    #lineCount = @aceDoc.getLength()
+    #lastLine = @aceDoc.$lines[lineCount - 1]
+    #@aceDoc.insertMergedLines {row: lineCount, column: 0} ,[e.code]
+    #添加到当前位置，自动换行
+    cursor = @ace.getCursorPosition();
+    @aceDoc.insertMergedLines cursor ,[e.code,'']
+    #@ace.moveCursorToPosition(e);
+    @lockDefaultCode()
 
   onManualCast: (e) ->
     cast = @$el.parent().length
@@ -774,7 +784,7 @@ module.exports = class SpellView extends CocoView
     @lockDefaultCode true
     @recompile cast
     Backbone.Mediator.publish 'tome:spell-loaded', spell: @spell
-    @updateLines()
+
 
   recompile: (cast=true, realTime=false) ->
     hasChanged = @spell.source isnt @getSource()
