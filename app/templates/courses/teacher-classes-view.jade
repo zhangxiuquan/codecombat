@@ -77,7 +77,8 @@ mixin classRow(classroom)
       else
         each trimCourse, index in classroom.get('courses') || []
           - var course = view.courses.get(trimCourse._id);
-          +progressDot(classroom, course, index)
+          if view.courseInstances.findWhere({ classroomID: classroom.id, courseID: course.id })
+            +progressDot(classroom, course, index)
     .view-class-arrow.col-xs-1
       a.view-class-arrow-inner.glyphicon.glyphicon-chevron-right(data-classroom-id=classroom.id, href=('/teachers/classes/' + classroom.id))
 
@@ -107,7 +108,7 @@ mixin progressDot(classroom, course, index)
   - var started = 0;
   if courseInstance
     - complete = courseInstance.numCompleted
-    - started = courseInstance.numStarted
+    - started = courseInstance.started
     - dotClass = complete === total ? 'forest' : started ? 'gold' : '';
   - var progressDotContext = {total: total, complete: complete}; 
   .progress-dot(class=dotClass, data-title=view.progressDotTemplate(progressDotContext))

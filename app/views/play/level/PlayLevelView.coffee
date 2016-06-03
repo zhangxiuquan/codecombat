@@ -226,10 +226,7 @@ module.exports = class PlayLevelView extends RootView
       opponentSpells = opponentSpells.concat spells
     if (not @session.get('teamSpells')) and @otherSession?.get('teamSpells')
       @session.set('teamSpells', @otherSession.get('teamSpells'))
-    if @getQueryVariable 'esper'
-      opponentCode = @otherSession?.get('code') or {}
-    else
-      opponentCode = @otherSession?.get('transpiledCode') or {}
+    opponentCode = @otherSession?.get('code') or {}
     myCode = @session.get('code') or {}
     for spell in opponentSpells
       [thang, spell] = spell.split '/'
@@ -358,22 +355,13 @@ module.exports = class PlayLevelView extends RootView
     return {} unless @level.get('type') in ['ladder', 'hero-ladder', 'course-ladder']
     playerNames = {}
     for session in [@session, @otherSession] when session?.get('team')
-      playerNames[session.get('team')] = session.get('creatorName') or 'Anoner'
+      playerNames[session.get('team')] = session.get('creatorName') or 'Anonymous'
     playerNames
 
   # Once Surface is Loaded ####################################################
 
   onLevelStarted: ->
     return unless @surface?
-
-    #TODO: Remove this at some point
-    if @session.get('codeLanguage') in ['clojure', 'io']
-      problem =
-        aetherProblem:
-          message: "Sorry, support for #{@session.get('codeLanguage')} has been removed."
-
-      Backbone.Mediator.publish 'tome:show-problem-alert', problem: problem
-
     @loadingView.showReady()
     @trackLevelLoadEnd()
     if window.currentModal and not window.currentModal.destroyed and window.currentModal.constructor isnt VictoryModal
@@ -431,16 +419,14 @@ module.exports = class PlayLevelView extends RootView
 
   perhapsStartSimulating: ->
     return unless @shouldSimulate()
+    return console.error "Should not auto-simulate until we fix how these languages are loaded"
     # TODO: how can we not require these as part of /play bundle?
-    #require "vendor/aether-#{codeLanguage}" for codeLanguage in ['javascript', 'python', 'coffeescript', 'lua', 'clojure', 'io']
-    require 'vendor/aether-javascript'
-    require 'vendor/aether-python'
-    require 'vendor/aether-coffeescript'
-    require 'vendor/aether-lua'
-    require 'vendor/aether-java'
-    require 'vendor/aether-clojure'
-    require 'vendor/aether-io'
-    require 'vendor/aether-java'
+    ##require "vendor/aether-#{codeLanguage}" for codeLanguage in ['javascript', 'python', 'coffeescript', 'lua', 'java']
+    #require 'vendor/aether-javascript'
+    #require 'vendor/aether-python'
+    #require 'vendor/aether-coffeescript'
+    #require 'vendor/aether-lua'
+    #require 'vendor/aether-java'
     @simulateNextGame()
 
   simulateNextGame: ->
@@ -657,7 +643,7 @@ module.exports = class PlayLevelView extends RootView
     return unless @$el.hasClass 'real-time'
     @$el.removeClass 'real-time'
     @onWindowResize()
-    if @world.frames.length is @world.totalFrames
+    if @world.frames.length is @world.totalFrames and not @surface.countdownScreen?.showing
       _.delay @onSubmissionComplete, 750  # Wait for transition to end.
     else
       @waitingForSubmissionComplete = true
@@ -665,6 +651,7 @@ module.exports = class PlayLevelView extends RootView
 
   onSubmissionComplete: =>
     return if @destroyed
+    Backbone.Mediator.publish 'level:set-time', ratio: 1
     return if @level.hasLocalChanges()  # Don't award achievements when beating level changed in level editor
     # TODO: Show a victory dialog specific to hero-ladder level
     if @goalManager.checkOverallStatus() is 'success' and not @options.realTimeMultiplayerSessionID?

@@ -3,6 +3,7 @@ utils = require '../utils'
 urlUser = '/db/user'
 User = require '../../../server/models/User'
 Classroom = require '../../../server/models/Classroom'
+Prepaid = require '../../../server/models/Prepaid'
 request = require '../request'
 
 describe 'POST /db/user', ->
@@ -38,7 +39,7 @@ describe 'POST /db/user', ->
 
   it 'serves the user through /db/user/id', (done) ->
     unittest.getNormalJoe (user) ->
-      request.post getURL('/auth/logout'), ->
+      utils.becomeAnonymous().then ->
         url = getURL(urlUser+'/'+user._id)
         request.get url, (err, res, body) ->
           expect(res.statusCode).toBe(200)
@@ -233,6 +234,18 @@ ghlfarghlarghlfarghlarghlfarghlarghlfarghlarghlfarghlarghlfarghlarghlfarghlarghl
       yield new Promise (resolve) -> setTimeout(resolve, 10)
       classroom = yield Classroom.findById(classroom.id)
       expect(classroom.get('members').length).toBe(0)
+      done()
+    
+    it 'changes the role regardless of emailVerified', utils.wrap (done) ->
+      user = yield utils.initUser()
+      user.set('emailVerified', true)
+      yield user.save()
+      yield utils.loginUser(user)
+      attrs = user.toObject()
+      attrs.role = 'teacher'
+      [res, body] = yield request.putAsync { uri: getURL('/db/user/'+user.id), json: attrs }
+      user = yield User.findById(user.id)
+      expect(user.get('role')).toBe('teacher')
       done()
 
   it 'ignores attempts to change away from a teacher role', utils.wrap (done) ->
@@ -511,6 +524,18 @@ describe 'GET /db/user', ->
   # Add to the test case above an extra data check
 
   xit 'can fetch another user with restricted fields'
+  
+  
+describe 'GET /db/user/:handle', ->
+  it 'populates coursePrepaid from coursePrepaidID', utils.wrap (done) ->
+    course = yield utils.makeCourse()
+    user = yield utils.initUser({coursePrepaidID: course.id})
+    [res, body] = yield request.getAsync({url: getURL("/db/user/#{user.id}"), json: true})
+    expect(res.statusCode).toBe(200)
+    expect(res.body.coursePrepaid._id).toBe(course.id)
+    expect(res.body.coursePrepaid.startDate).toBe(Prepaid.DEFAULT_START_DATE)
+    done()
+    
 
 describe 'DELETE /db/user', ->
   it 'can delete a user', utils.wrap (done) ->
@@ -541,6 +566,12 @@ describe 'DELETE /db/user', ->
     expect(classroom.get('deletedMembers').length).toBe(1)
     expect(classroom.get('members')[0].toString()).toEqual(user2.id)
     expect(classroom.get('deletedMembers')[0].toString()).toEqual(user.id)
+    done()
+    
+  it 'returns 401 if no cookie session', utils.wrap (done) ->
+    yield utils.logout()
+    [res, body] = yield request.delAsync {uri: "#{getURL(urlUser)}/1234"}
+    expect(res.statusCode).toBe(401)
     done()
 
 describe 'Statistics', ->

@@ -36,7 +36,7 @@ if (database.generateMongoConnectionString() !== dbString) {
   throw Error('Stopping server tests because db connection string was not as expected.');
 }
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000 * 120; // for long Stripe tests
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000 * 10; // for long Stripe tests
 require('../server/common'); // Make sure global testing functions are set up
 
 var initialized = false;
@@ -76,6 +76,18 @@ beforeEach(function(done) {
         cb(err);
       });
     },
+    function(cb) {
+      // Initialize products
+      var utils = require('../server/utils');
+      request = require('../server/request');
+      utils.initUser()
+        .then(function (user) {
+          return utils.loginUser(user, {request: request})
+        })
+        .then(function () {
+          cb()
+        });
+    },    
     function(cb) {
       // Initialize products
       request = require('../server/request');
