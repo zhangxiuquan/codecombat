@@ -5,6 +5,7 @@ AuthModal = require 'views/core/AuthModal'
 CreateAccountModal = require 'views/core/CreateAccountModal'
 ChangeCourseLanguageModal = require 'views/courses/ChangeCourseLanguageModal'
 ChooseLanguageModal = require 'views/courses/ChooseLanguageModal'
+JoinClassModal = require 'views/courses/JoinClassModal'
 CourseInstance = require 'models/CourseInstance'
 CocoCollection = require 'collections/CocoCollection'
 Course = require 'models/Course'
@@ -26,6 +27,8 @@ module.exports = class CoursesView extends RootView
     'click #join-class-btn': 'onClickJoinClassButton'
     'submit #join-class-form': 'onSubmitJoinClassForm'
     'click #change-language-link': 'onClickChangeLanguageLink'
+
+  getTitle: -> return $.i18n.t('teacher.students')
 
   initialize: ->
     @courseInstances = new CocoCollection([], { url: "/db/user/#{me.id}/course_instances", model: CourseInstance})
@@ -91,10 +94,19 @@ module.exports = class CoursesView extends RootView
       @renderSelectors '#join-class-form'
       return
     @renderSelectors '#join-class-form'
-    newClassroom = new Classroom()
-    newClassroom.joinWithCode(@classCode)
-    newClassroom.on 'sync', @onJoinClassroomSuccess, @
-    newClassroom.on 'error', @onJoinClassroomError, @
+    if me.get('emailVerified') or me.isStudent()
+      newClassroom = new Classroom()
+      jqxhr = newClassroom.joinWithCode(@classCode)
+      @listenTo newClassroom, 'join:success', -> @onJoinClassroomSuccess(newClassroom)
+      @listenTo newClassroom, 'join:error', -> @onJoinClassroomError(newClassroom, jqxhr)
+    else
+      modal = new JoinClassModal({ @classCode })
+      @openModalView modal
+      @listenTo modal, 'join:success', @onJoinClassroomSuccess
+      @listenTo modal, 'join:error', @onJoinClassroomError
+      @listenTo modal, 'hidden', ->
+        @state = null
+        @renderSelectors '#join-class-form'
 
   onJoinClassroomError: (classroom, jqxhr, options) ->
     @state = null
@@ -108,6 +120,7 @@ module.exports = class CoursesView extends RootView
     @renderSelectors '#join-class-form'
 
   onJoinClassroomSuccess: (newClassroom, data, options) ->
+    @state = null
     application.tracker?.trackEvent 'Joined classroom', {
       category: 'Courses'
       classCode: @classCode

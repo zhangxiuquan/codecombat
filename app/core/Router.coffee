@@ -71,15 +71,15 @@ module.exports = class CocoRouter extends Backbone.Router
     'contribute/diplomat': go('contribute/DiplomatView')
     'contribute/scribe': go('contribute/ScribeView')
 
-    'courses': go('courses/CoursesView') # , { studentsOnly: true }) # TODO: Enforce after session-less play for teachers
-    'Courses': go('courses/CoursesView') # , { studentsOnly: true })
+    'courses': go('courses/CoursesView', { studentsOnly: true })
+    'Courses': go('courses/CoursesView', { studentsOnly: true })
     'courses/students': redirect('/courses')
     'courses/teachers': redirect('/teachers/classes')
-    'courses/purchase': redirect('/teachers/enrollments')
-    'courses/enroll(/:courseID)': redirect('/teachers/enrollments')
+    'courses/purchase': redirect('/teachers/licenses')
+    'courses/enroll(/:courseID)': redirect('/teachers/licenses')
     'courses/update-account': go('courses/CoursesUpdateAccountView')
-    'courses/:classroomID': go('courses/ClassroomView') #, { studentsOnly: true })
-    'courses/:courseID/:courseInstanceID': go('courses/CourseDetailsView')
+    'courses/:classroomID': go('courses/ClassroomView', { studentsOnly: true })
+    'courses/:courseID/:courseInstanceID': go('courses/CourseDetailsView', { studentsOnly: true })
 
     'db/*path': 'routeToServer'
     'demo(/*subpath)': go('DemoView')
@@ -144,13 +144,14 @@ module.exports = class CocoRouter extends Backbone.Router
     'SEEN': go('NewHomeView')
 
     'teachers': redirect('/teachers/classes')
-    'teachers/classes': go('courses/TeacherClassesView') #, { teachersOnly: true })
-    'teachers/classes/:classroomID': go('courses/TeacherClassView') #, { teachersOnly: true })
+    'teachers/classes': go('courses/TeacherClassesView', { teachersOnly: true })
+    'teachers/classes/:classroomID': go('courses/TeacherClassView', { teachersOnly: true })
     'teachers/courses': go('courses/TeacherCoursesView')
     'teachers/demo': go('teachers/RequestQuoteView')
-    'teachers/enrollments': go('courses/EnrollmentsView') #, { teachersOnly: true })
+    'teachers/enrollments': redirect('/teachers/licenses')
+    'teachers/licenses': go('courses/EnrollmentsView', { teachersOnly: true })
     'teachers/freetrial': go('teachers/RequestQuoteView')
-    'teachers/quote': go('teachers/RequestQuoteView')
+    'teachers/quote': redirect('/teachers/demo')
     'teachers/signup': ->
       return @routeDirectly('teachers/CreateTeacherAccountView', []) if me.isAnonymous()
       @navigate('/teachers/update-account', {trigger: true, replace: true})
@@ -161,6 +162,7 @@ module.exports = class CocoRouter extends Backbone.Router
     'test(/*subpath)': go('TestView')
 
     'user/:slugOrID': go('user/MainUserView')
+    'user/:userID/verify/:verificationCode': go('user/EmailVerifiedView')
 
     '*name/': 'removeTrailingSlash'
     '*name': go('NotFoundView')
@@ -174,7 +176,7 @@ module.exports = class CocoRouter extends Backbone.Router
   routeDirectly: (path, args=[], options={}) ->
     if options.teachersOnly and not me.isTeacher()
       return @routeDirectly('teachers/RestrictedToTeachersView')
-    if options.studentsOnly and me.isTeacher()
+    if options.studentsOnly and not me.isStudent()
       return @routeDirectly('courses/RestrictedToStudentsView')
     leavingMessage = _.result(window.currentView, 'onLeaveMessage')
     if leavingMessage
