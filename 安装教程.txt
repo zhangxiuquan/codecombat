@@ -5,11 +5,11 @@
 3.npm install npm@2.15.1
 4.Python27配置path
 5.Visual Studio Express 2015 编译器官网
-npm config set msvs_version 2012 --globa
+npm config set msvs_version 2015 --globa
 6.mongod 3.2 配置path
 新建c:\db，
 启动服务器，http://localhost:27017
-mongod --setParameter textSearchEnabled=true --dbpath E:\codecombatdb
+mongod --setParameter textSearchEnabled=true --dbpath D:\codecombatdb
 导入数据
 mongorestore --drop dump
 7.下载
@@ -27,3 +27,8 @@ npm config ls -l
 gem sources -a http://ruby.taobao.org/
 gem安装 
 gem install sass
+
+npm install的时候可能还会提示phantomjs下不下来，
+解决方法就是手动下载phantomjs-1.9.8-windows.zip，
+然后直接放到它提示的目录C:\Users\~\AppData\Local\Temp\phantomjs下，
+重新npm install

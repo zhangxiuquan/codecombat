@@ -12,6 +12,8 @@ module.exports = class User extends CocoModel
   urlRoot: '/db/user'
   notyErrors: false
 
+  getUserName2:-> @get('username2', '没有')
+
   isAdmin: -> 'admin' in @get('permissions', true)
   isArtisan: -> 'artisan' in @get('permissions', true)
   isInGodMode: -> 'godmode' in @get('permissions', true)
@@ -297,6 +299,7 @@ module.exports = class User extends CocoModel
     return new Prepaid(coursePrepaid)
 
   becomeStudent: (options={}) ->
+    console.log("becomeStudent")
     options.url = '/db/user/-/become-student'
     options.type = 'PUT'
     @fetch(options)

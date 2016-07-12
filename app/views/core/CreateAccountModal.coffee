@@ -128,8 +128,8 @@ module.exports = class CreateAccountModal extends ModalView
       options.url = "/db/user?facebookID=#{@facebookAttrs.facebookID}&facebookAccessToken=#{application.facebookHandler.authResponse.accessToken}"
       options.type = 'PUT'
     @newUser.save(null, options)
-    @newUser.once 'sync', @onUserCreated, @
-    @newUser.once 'error', @onUserSaveError, @
+    #@newUser.once 'sync', @onUserCreated, @
+    #@newUser.once 'error', @onUserSaveError, @
 
   onUserSaveError: (user, jqxhr) ->
     @$('#signup-button').text($.i18n.t('signup.sign_up')).attr('disabled', false)

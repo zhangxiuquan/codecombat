@@ -8,6 +8,7 @@ request = require '../request'
 
 describe 'POST /db/user', ->
 
+  console.log("什么POST /db/user")
   createAnonNameUser = (name, done)->
     request.post getURL('/auth/logout'), ->
       request.get getURL('/auth/whoami'), ->

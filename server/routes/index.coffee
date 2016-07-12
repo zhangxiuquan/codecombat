@@ -1,9 +1,20 @@
 mw = require '../middleware'
 
+mmmm = {}
+mmmm.fff  =  (req, res, next) ->
+                  console.log("req")
+                  console.log("登陆请求")
+                  mmmm.orfun(req,res,next)
+
 module.exports.setup = (app) ->
-  
+
+  console.log("module.exports.setup");
+
   passport = require('passport')
-  app.post('/auth/login', passport.authenticate('local'), mw.auth.afterLogin)
+  #app.post('/auth/login', passport.authenticate('local'), mw.auth.afterLogin)
+  mmmm.orfun=passport.authenticate('local')
+  app.post('/auth/login', mmmm.fff, mw.auth.afterLogin)
+
   app.post('/auth/login-facebook', mw.auth.loginByFacebook, mw.auth.afterLogin)
   app.post('/auth/login-gplus', mw.auth.loginByGPlus, mw.auth.afterLogin)
   app.post('/auth/logout', mw.auth.logout)

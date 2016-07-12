@@ -13,6 +13,8 @@ Classroom = require '../models/Classroom'
 
 module.exports =
   fetchByGPlusID: wrap (req, res, next) ->
+
+    console.log("注册匹配？？"+req.query.gplusID)
     gpID = req.query.gplusID
     gpAT = req.query.gplusAccessToken
     return next() unless gpID and gpAT
@@ -52,6 +54,7 @@ module.exports =
     res.status(200).send(user.toObject({req: req}))
 
   becomeStudent: wrap (req, res, next) ->
+    console.log("becomeStudent创建学生")
     userID = mongoose.Types.ObjectId(req.user.id)
     yield Classroom.remove({ ownerID: userID }, false)
     userID = mongoose.Types.ObjectId(req.user.id)
@@ -60,6 +63,7 @@ module.exports =
     res.status(200).send(user.toObject({req: req}))
 
   verifyEmailAddress: wrap (req, res, next) ->
+    console.log("验证邮箱Address")
     user = yield User.findOne({ _id: mongoose.Types.ObjectId(req.params.userID) })
     [timestamp, hash] = req.params.verificationCode.split(':')
     unless user
@@ -71,6 +75,7 @@ module.exports =
 
   resetEmailVerifiedFlag: wrap (req, res, next) ->
     newEmail = req.body.email
+    console.log("这是什么resetEmailVerifiedFlag"+newEmail)
     _id = mongoose.Types.ObjectId(req.body._id)
     if newEmail
       user = yield User.findOne({ _id })
@@ -80,6 +85,7 @@ module.exports =
     next()
 
   sendVerificationEmail: wrap (req, res, next) ->
+    console.log("这是什么sendVerificationEmail")
     user = yield User.findById(req.params.userID)
     timestamp = (new Date).getTime()
     if not user

@@ -238,6 +238,8 @@ UserHandler = class UserHandler extends Handler
     req.query.limit = parseInt(req.query.limit) ? 20
 
   post: (req, res) ->
+    console.log("用户 UserHandler post 事件")
+    console.log("req.body-> "+req.body)
     return @sendBadInputError(res, 'No input.') if _.isEmpty(req.body)
     return @sendBadInputError(res, 'Must have an anonymous user to post with.') unless req.user
     return @sendBadInputError(res, 'Existing users cannot create new ones.') if req.user.get('anonymous') is false
