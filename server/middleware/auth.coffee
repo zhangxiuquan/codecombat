@@ -97,7 +97,58 @@ module.exports =
     req.logInAsync = Promise.promisify(req.logIn)
     yield req.logInAsync(user)
     next()
-    
+
+    #使用id登录
+  loginByMbID: wrap (req, res) ->
+    console.log("loginByMbID登陆2")
+    console.log req
+    mbid =  req.query.mbid
+    if not mbid
+      mbid = req.params.mbid
+    if not mbid
+      console.log("没有mbid")
+      res.send({})
+      return
+    #从数据库中获取mbid对应的acount和password. 先测试
+    acount  = mbid+"@xxx.com"
+    password=acount
+    #1. 自动登录，如果登录不了，则自动注册（密码错误需要另行处理）
+    user = yield User.findOne({email:acount})
+    if  user
+        #找到用户，则登录成功，则继续返回页面
+      console.log("自动登录"+acount)
+      req.logInAsync = Promise.promisify(req.logIn)
+      yield req.logInAsync(user)
+      res.send({})
+      return
+    #没有用户，账号不存在。 则自动注册
+    console.log("没有用户"+acount)
+    #2.自动注册
+    #如果已经登录，且不是匿名用户，则注销登录
+    if (not req.user) or (req.user.isAnonymous())
+      console.log("注销用户"+acount)
+      req.logout()
+    #注册
+    console.log("注册"+acount)
+
+    req.param["email"]=acount
+    req.param["password"]=password
+    req.param["name"]=acount
+
+    user = User.makeNew(req)
+    user.anonymous=false;
+    user.email=acount
+    user.name=acount
+    user.password=password
+    #user.set("email",email)
+    #user.set("name",acount)
+    #user.set("password",password)
+    yield user.save()
+    #设置seesion
+    req.logInAsync = Promise.promisify(req.logIn)
+    yield req.logInAsync(user)
+    res.send(user)
+
   spy: wrap (req, res) ->
     throw new errors.Unauthorized('You must be logged in to enter espionage mode') unless req.user
     throw new errors.Forbidden('You must be an admin to enter espionage mode') unless req.user.isAdmin()

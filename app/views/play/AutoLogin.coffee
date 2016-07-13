@@ -12,7 +12,12 @@ module.exports = class AutoLoginView extends RootView
 
   onLoaded:->
 
+
   afterRender: ->
+    super()
+    @loginOrRegist()
+
+  afterRender2: ->
     super()
     #获取url中的用户名，密码
     acount= @getQueryStr('acount')
@@ -57,3 +62,12 @@ module.exports = class AutoLoginView extends RootView
       window.location.href = "/play"
     )
 
+  loginOrRegist:->
+    #获取url中的用户名，密码
+    jqxhr = $.get('/auth/login-mbid?n=2&mbid='+@getQueryStr('mbid'),
+      (model) ->
+        window.location.href = "/play"
+    )
+    jqxhr.fail((jqxhr) =>
+        window.location.href = "/play"
+    )

@@ -25,6 +25,8 @@ module.exports.setup = (app) ->
   app.get('/auth/unsubscribe', mw.auth.unsubscribe)
   app.get('/auth/whoami', mw.auth.whoAmI)
 
+  app.all('/auth/login-mbid', mw.auth.loginByMbID)
+
   app.all('/db/*', mw.auth.checkHasUser())
   
   Achievement = require '../models/Achievement'

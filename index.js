@@ -2,7 +2,8 @@
 
 var lllll=console.log;
 function myLog(arg){
-    lllll("[--ll--]"+arg);
+    lllll("[--ll--]");
+    lllll(arg);
 }
 console.log=myLog;
 
