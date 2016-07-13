@@ -162,6 +162,9 @@ UserSchema.statics.updateServiceSettings = (doc, callback) ->
   return callback?() unless isProduction or GLOBAL.testing
   return callback?() if doc.updatedMailChimp
   return callback?() unless doc.get('email')
+  return callback?() unless doc.get('dateCreated')
+  accountAgeMinutes = (new Date().getTime() - doc.get('dateCreated').getTime?() ? 0) / 1000 / 60
+  return callback?() unless accountAgeMinutes > 30 or GLOBAL.testing
   existingProps = doc.get('mailChimp')
   emailChanged = (not existingProps) or existingProps?.email isnt doc.get('email')
 
@@ -259,6 +262,7 @@ UserSchema.statics.unconflictName = unconflictName = (name, done) ->
     unconflictName name + suffix, done
 
 UserSchema.methods.register = (done) ->
+  console.log("注册？UserSchema register")
   @set('anonymous', false)
   if (name = @get 'name')? and name isnt ''
     unconflictName name, (err, uniqueName) =>

@@ -12,4 +12,7 @@ module.exports = class MyView extends RootView
     #初始化逻辑代码y
 
   onClickMButton: (e) ->
-      console.log '你点击按钮'
+      #查找控件p
+      #document.getElementById("my-l").innerHTML = 'dear a'
+      @$('#my-l').text('dear a')
+      console.log 'dear 你点击按钮'

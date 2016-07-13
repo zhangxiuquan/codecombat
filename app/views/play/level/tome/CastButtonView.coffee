@@ -12,6 +12,8 @@ module.exports = class CastButtonView extends CocoView
     'click .cast-button': 'onCastButtonClick'
     'click .submit-button': 'onCastRealTimeButtonClick'
     'click .done-button': 'onDoneButtonClick'
+    'click .l-cast-button': 'onLButtonClick'
+
 
   subscriptions:
     'tome:spell-changed': 'onSpellChanged'
@@ -24,6 +26,8 @@ module.exports = class CastButtonView extends CocoView
     'goal-manager:new-goal-states': 'onNewGoalStates'
     'god:goals-calculated': 'onGoalsCalculated'
     'playback:ended-changed': 'onPlaybackEndedChanged'
+    'l:manual-cast': 'onDLButton'
+
 
   constructor: (options) ->
     super options
@@ -41,6 +45,7 @@ module.exports = class CastButtonView extends CocoView
 
   afterRender: ->
     super()
+    $('.l-cast-button').text('测试')
     @castButton = $('.cast-button', @$el)
     spell.view?.createOnCodeChangeHandlers() for spellKey, spell of @spells
     if @options.level.get('hidesSubmitUntilRun') or @options.level.get 'hidesRealTimePlayback'
@@ -69,6 +74,11 @@ module.exports = class CastButtonView extends CocoView
 
   onCastButtonClick: (e) ->
     Backbone.Mediator.publish 'tome:manual-cast', {}
+
+  onLButtonClick: (e) ->
+    console.log '广播一个测试事件l:manual-cast'
+    Backbone.Mediator.publish 'l:manual-cast', {}
+    Backbone.Mediator.publish 'l:add-code', {code:"hero.moveRight();"}
 
   onCastRealTimeButtonClick: (e) ->
     if @inRealTimeMultiplayerSession
@@ -134,6 +144,9 @@ module.exports = class CastButtonView extends CocoView
   onPlaybackEndedChanged: (e) ->
     return unless e.ended and @winnable
     @$el.toggleClass 'has-seen-winning-replay', true
+
+  onDLButton: (e) ->
+    console.log '在CastBuutonView.coffee中收到事件l:manual-cast'
 
   updateCastButton: ->
     return if _.some @spells, (spell) => not spell.loaded

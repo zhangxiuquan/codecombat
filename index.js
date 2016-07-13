@@ -1,3 +1,11 @@
+
+
+var lllll=console.log;
+function myLog(arg){
+    lllll("[--ll--]"+arg);
+}
+console.log=myLog;
+
 var majorVersion = parseInt(process.versions.node.split('.')[0]);
 if (majorVersion < 4) {
   console.error('Server requires Node v4 or higher. Your version:', process.version);

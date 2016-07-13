@@ -80,7 +80,6 @@ module.exports = class PlayLevelView extends RootView
     'real-time-multiplayer:manual-cast': 'onRealTimeMultiplayerCast'
     'ipad:memory-warning': 'onIPadMemoryWarning'
     'store:item-purchased': 'onItemPurchased'
-    'l:manual-cast': 'onDLButton'
 
   events:
     'click #level-done-button': 'onDonePressed'
@@ -92,7 +91,7 @@ module.exports = class PlayLevelView extends RootView
     'ctrl+s': 'onCtrlS'
     'esc': 'onEscapePressed'
 
-  # Initial Setup #############################################################
+# Initial Setup #############################################################
 
   constructor: (options, @levelID) ->
     console.profile?() if PROFILE_ME
@@ -160,7 +159,7 @@ module.exports = class PlayLevelView extends RootView
       return me.getCampaignAdsGroup() is 'leaderboard-ads'
     false
 
-  # CocoView overridden methods ###############################################
+# CocoView overridden methods ###############################################
 
   getRenderData: ->
     c = super()
@@ -178,10 +177,10 @@ module.exports = class PlayLevelView extends RootView
   afterInsert: ->
     super()
 
-  # Partially Loaded Setup ####################################################
+# Partially Loaded Setup ####################################################
 
   onWorldNecessitiesLoaded: ->
-    # Called when we have enough to build the world, but not everything is loaded
+# Called when we have enough to build the world, but not everything is loaded
     @grabLevelLoaderData()
     team = @getQueryVariable('team') ?  @session.get('team') ? @world.teamForPlayer(0)
     @loadOpponentTeam(team)
@@ -226,7 +225,10 @@ module.exports = class PlayLevelView extends RootView
       opponentSpells = opponentSpells.concat spells
     if (not @session.get('teamSpells')) and @otherSession?.get('teamSpells')
       @session.set('teamSpells', @otherSession.get('teamSpells'))
-    opponentCode = @otherSession?.get('code') or {}
+    if @getQueryVariable 'esper'
+      opponentCode = @otherSession?.get('code') or {}
+    else
+      opponentCode = @otherSession?.get('transpiledCode') or {}
     myCode = @session.get('code') or {}
     for spell in opponentSpells
       [thang, spell] = spell.split '/'
@@ -235,7 +237,7 @@ module.exports = class PlayLevelView extends RootView
       if c then myCode[thang][spell] = c else delete myCode[thang][spell]
     @session.set('code', myCode)
     if @session.get('multiplayer') and @otherSession?
-      # For now, ladderGame will disallow multiplayer, because session code combining doesn't play nice yet.
+# For now, ladderGame will disallow multiplayer, because session code combining doesn't play nice yet.
       @session.set 'multiplayer', false
 
   setupGod: ->
@@ -267,7 +269,7 @@ module.exports = class PlayLevelView extends RootView
     @insertSubView new ProblemAlertView session: @session, level: @level, supermodel: @supermodel
     @insertSubView new DuelStatsView level: @level, session: @session, otherSession: @otherSession, supermodel: @supermodel, thangs: @world.thangs if @level.get('type') in ['hero-ladder', 'course-ladder']
     @insertSubView @controlBar = new ControlBarView {worldName: utils.i18n(@level.attributes, 'name'), session: @session, level: @level, supermodel: @supermodel, courseID: @courseID, courseInstanceID: @courseInstanceID}
-    #_.delay (=> Backbone.Mediator.publish('level:set-debug', debug: true)), 5000 if @isIPadApp()   # if me.displayName() is 'Nick'
+#_.delay (=> Backbone.Mediator.publish('level:set-debug', debug: true)), 5000 if @isIPadApp()   # if me.displayName() is 'Nick'
 
   initVolume: ->
     volume = me.get('volume')
@@ -286,7 +288,7 @@ module.exports = class PlayLevelView extends RootView
       @session.set 'multiplayer', false  # Temp: multiplayer has bugged out some sessions, so ignoring it.
     @bus.connect() if @session.get('multiplayer')
 
-  # Load Completed Setup ######################################################
+# Load Completed Setup ######################################################
 
   onSessionLoaded: (e) ->
     return if @session
@@ -304,10 +306,9 @@ module.exports = class PlayLevelView extends RootView
       raider = '55527eb0b8abf4ba1fe9a107'
       e.session.set 'heroConfig', {"thangType":raider,"inventory":{}}
     else if e.level.get('type', true) in ['hero', 'hero-ladder', 'hero-coop'] and not _.size e.session.get('heroConfig')?.inventory ? {}
-      #如果没有选择英雄，则选择。 去掉选择，给个默认的
-     @setupManager?.destroy()
-      #@setupManager = new LevelSetupManager({supermodel: @supermodel, level: e.level, levelID: @levelID, parent: @, session: e.session, courseID: @courseID, courseInstanceID: @courseInstanceID})
-      #@setupManager.open()
+      @setupManager?.destroy()
+      @setupManager = new LevelSetupManager({supermodel: @supermodel, level: e.level, levelID: @levelID, parent: @, session: e.session, courseID: @courseID, courseInstanceID: @courseInstanceID})
+      @setupManager.open()
 
     @onRealTimeMultiplayerLevelLoaded e.session if e.level.get('type') in ['hero-ladder', 'course-ladder']
 
@@ -315,7 +316,7 @@ module.exports = class PlayLevelView extends RootView
     _.defer => @onLevelLoaderLoaded()
 
   onLevelLoaderLoaded: ->
-    # Everything is now loaded
+# Everything is now loaded
     return unless @levelLoader.progress() is 1  # double check, since closing the guide may trigger this early
 
     # Save latest level played.
@@ -355,13 +356,22 @@ module.exports = class PlayLevelView extends RootView
     return {} unless @level.get('type') in ['ladder', 'hero-ladder', 'course-ladder']
     playerNames = {}
     for session in [@session, @otherSession] when session?.get('team')
-      playerNames[session.get('team')] = session.get('creatorName') or 'Anonymous'
+      playerNames[session.get('team')] = session.get('creatorName') or 'Anoner'
     playerNames
 
-  # Once Surface is Loaded ####################################################
+# Once Surface is Loaded ####################################################
 
   onLevelStarted: ->
     return unless @surface?
+
+    #TODO: Remove this at some point
+    if @session.get('codeLanguage') in ['clojure', 'io']
+      problem =
+        aetherProblem:
+          message: "Sorry, support for #{@session.get('codeLanguage')} has been removed."
+
+      Backbone.Mediator.publish 'tome:show-problem-alert', problem: problem
+
     @loadingView.showReady()
     @trackLevelLoadEnd()
     if window.currentModal and not window.currentModal.destroyed and window.currentModal.constructor isnt VictoryModal
@@ -378,8 +388,9 @@ module.exports = class PlayLevelView extends RootView
     @selectHero()
 
   onLoadingViewUnveiled: (e) ->
+    console.log 'onLoadingViewUnveiled'
     if @level.get('type') in ['course-ladder', 'hero-ladder'] or @observing
-      # We used to autoplay by default, but now we only do it if the level says to in the introduction script.
+# We used to autoplay by default, but now we only do it if the level says to in the introduction script.
       Backbone.Mediator.publish 'level:set-playing', playing: true
     @loadingView.$el.remove()
     @removeSubView @loadingView
@@ -419,14 +430,16 @@ module.exports = class PlayLevelView extends RootView
 
   perhapsStartSimulating: ->
     return unless @shouldSimulate()
-    return console.error "Should not auto-simulate until we fix how these languages are loaded"
     # TODO: how can we not require these as part of /play bundle?
-    ##require "vendor/aether-#{codeLanguage}" for codeLanguage in ['javascript', 'python', 'coffeescript', 'lua', 'java']
-    #require 'vendor/aether-javascript'
-    #require 'vendor/aether-python'
-    #require 'vendor/aether-coffeescript'
-    #require 'vendor/aether-lua'
-    #require 'vendor/aether-java'
+    #require "vendor/aether-#{codeLanguage}" for codeLanguage in ['javascript', 'python', 'coffeescript', 'lua', 'clojure', 'io']
+    require 'vendor/aether-javascript'
+    require 'vendor/aether-python'
+    require 'vendor/aether-coffeescript'
+    require 'vendor/aether-lua'
+    require 'vendor/aether-java'
+    require 'vendor/aether-clojure'
+    require 'vendor/aether-io'
+    require 'vendor/aether-java'
     @simulateNextGame()
 
   simulateNextGame: ->
@@ -491,7 +504,7 @@ module.exports = class PlayLevelView extends RootView
     console.debug "We should have the power. Begin background ladder simulation."
     true
 
-  # callbacks
+# callbacks
 
   onCtrlS: (e) ->
     e.preventDefault()
@@ -585,10 +598,10 @@ module.exports = class PlayLevelView extends RootView
         @bus.disconnect()
 
   onSessionWillSave: (e) ->
-    # Something interesting has happened, so (at a lower frequency), we'll save a screenshot.
-    #@saveScreenshot e.session
+# Something interesting has happened, so (at a lower frequency), we'll save a screenshot.
+#@saveScreenshot e.session
 
-  # Throttled
+# Throttled
   saveScreenshot: (session) =>
     return unless screenshot = @surface?.screenshot()
     session.save {screenshot: screenshot}, {patch: true, type: 'PUT'}
@@ -608,7 +621,7 @@ module.exports = class PlayLevelView extends RootView
     $.ajax '/file', type: 'POST', data: body, success: (e) ->
       contactModal.updateScreenshot?()
 
-  # Dynamic sound loading
+# Dynamic sound loading
 
   onNewWorld: (e) ->
     return if @headless
@@ -630,7 +643,7 @@ module.exports = class PlayLevelView extends RootView
       continue unless sound = AudioPlayer.soundForDialogue message, thangType.get('soundTriggers')
       AudioPlayer.preloadSoundReference sound
 
-  # Real-time playback
+# Real-time playback
   onRealTimePlaybackWaiting: (e) ->
     @$el.addClass('real-time').focus()
     @onWindowResize()
@@ -643,7 +656,7 @@ module.exports = class PlayLevelView extends RootView
     return unless @$el.hasClass 'real-time'
     @$el.removeClass 'real-time'
     @onWindowResize()
-    if @world.frames.length is @world.totalFrames and not @surface.countdownScreen?.showing
+    if @world.frames.length is @world.totalFrames
       _.delay @onSubmissionComplete, 750  # Wait for transition to end.
     else
       @waitingForSubmissionComplete = true
@@ -651,7 +664,6 @@ module.exports = class PlayLevelView extends RootView
 
   onSubmissionComplete: =>
     return if @destroyed
-    Backbone.Mediator.publish 'level:set-time', ratio: 1
     return if @level.hasLocalChanges()  # Don't award achievements when beating level changed in level editor
     # TODO: Show a victory dialog specific to hero-ladder level
     if @goalManager.checkOverallStatus() is 'success' and not @options.realTimeMultiplayerSessionID?
@@ -671,7 +683,7 @@ module.exports = class PlayLevelView extends RootView
     @setupManager?.destroy()
     @simulator?.destroy()
     if ambientSound = @ambientSound
-      # Doesn't seem to work; stops immediately.
+# Doesn't seem to work; stops immediately.
       createjs.Tween.get(ambientSound).to({volume: 0.0}, 1500).call -> ambientSound.stop()
     $(window).off 'resize', @onWindowResize
     delete window.world # not sure where this is set, but this is one way to clean it up
@@ -691,54 +703,50 @@ module.exports = class PlayLevelView extends RootView
     inventory = heroConfig.inventory ? {}
     slot = e.item.getAllowedSlots()[0]
     if slot and not inventory[slot]
-      # Open up the inventory modal so they can equip the new item
+# Open up the inventory modal so they can equip the new item
       @setupManager?.destroy()
       @setupManager = new LevelSetupManager({supermodel: @supermodel, level: @level, levelID: @levelID, parent: @, session: @session, hadEverChosenHero: true})
       @setupManager.open()
 
-
-  onDLButton: (e) ->
-    console.log '在PlayLevelView.coffee中收到事件l:manual-cast'
-
-  # Start Real-time Multiplayer ######################################################
-  #
-  # This view acts as a hub for the real-time multiplayer session for the current level.
-  #
-  # It performs these actions:
-  #   Player heartbeat
-  #   Publishes player status
-  #   Updates real-time multiplayer session state
-  #   Updates real-time multiplayer player state
-  #   Cleans up old sessions (sets state to 'finished')
-  #   Real-time multiplayer cast handshake
-  #   Swap teams on game joined, if necessary
-  #   Reload PlayLevelView on real-time submit, automatically continue game and real-time playback
-  #
-  # It monitors these:
-  #   Real-time multiplayer sessions
-  #   Current real-time multiplayer session
-  #   Internal multiplayer create/joined/left events
-  #
-  # Real-time state variables.
-  # Each Ref is Firebase reference, and may have a matching Data suffixed variable with the latest data received.
-  #   @realTimePlayerRef - User's real-time multiplayer player for this level
-  #   @realTimePlayerGameRef - User's current real-time multiplayer player game session
-  #   @realTimeSessionRef - Current real-time multiplayer game session
-  #   @realTimeOpponentRef - Current real-time multiplayer opponent
-  #   @realTimePlayersRef - Real-time players for current real-time multiplayer game session
-  #   @options.realTimeMultiplayerSessionID - Need to continue an existing real-time multiplayer session
-  #
-  # TODO: Move this code to it's own file, or possibly the LevelBus
-  # TODO: Save settings somewhere reasonable
+# Start Real-time Multiplayer ######################################################
+#
+# This view acts as a hub for the real-time multiplayer session for the current level.
+#
+# It performs these actions:
+#   Player heartbeat
+#   Publishes player status
+#   Updates real-time multiplayer session state
+#   Updates real-time multiplayer player state
+#   Cleans up old sessions (sets state to 'finished')
+#   Real-time multiplayer cast handshake
+#   Swap teams on game joined, if necessary
+#   Reload PlayLevelView on real-time submit, automatically continue game and real-time playback
+#
+# It monitors these:
+#   Real-time multiplayer sessions
+#   Current real-time multiplayer session
+#   Internal multiplayer create/joined/left events
+#
+# Real-time state variables.
+# Each Ref is Firebase reference, and may have a matching Data suffixed variable with the latest data received.
+#   @realTimePlayerRef - User's real-time multiplayer player for this level
+#   @realTimePlayerGameRef - User's current real-time multiplayer player game session
+#   @realTimeSessionRef - Current real-time multiplayer game session
+#   @realTimeOpponentRef - Current real-time multiplayer opponent
+#   @realTimePlayersRef - Real-time players for current real-time multiplayer game session
+#   @options.realTimeMultiplayerSessionID - Need to continue an existing real-time multiplayer session
+#
+# TODO: Move this code to it's own file, or possibly the LevelBus
+# TODO: Save settings somewhere reasonable
   multiplayerFireHost: 'https://codecombat.firebaseio.com/test/db/'
 
   onRealTimeMultiplayerLevelLoaded: (session) ->
-    # console.log 'PlayLevelView onRealTimeMultiplayerLevelLoaded'
+# console.log 'PlayLevelView onRealTimeMultiplayerLevelLoaded'
     return if @realTimePlayerRef?
     return if me.get('anonymous')
     @realTimePlayerRef = new Firebase "#{@multiplayerFireHost}multiplayer_players/#{@levelID}/#{me.id}"
     unless @options.realTimeMultiplayerSessionID?
-      # TODO: Wait for name instead of using 'Anon', or try and update it later?
+# TODO: Wait for name instead of using 'Anon', or try and update it later?
       name = me.get('name') ? session.get('creatorName') ? 'Anon'
       @realTimePlayerRef.set
         id: me.id # TODO: is this redundant info necessary?
@@ -750,8 +758,8 @@ module.exports = class PlayLevelView extends RootView
     @cleanupRealTimeSessions()
 
   cleanupRealTimeSessions: ->
-    # console.log 'PlayLevelView cleanupRealTimeSessions'
-    # TODO: Reduce this call, possibly by username and dates
+# console.log 'PlayLevelView cleanupRealTimeSessions'
+# TODO: Reduce this call, possibly by username and dates
     realTimeSessionCollection = new Firebase "#{@multiplayerFireHost}multiplayer_level_sessions/#{@levelID}"
     realTimeSessionCollection.once 'value', (collectionSnapshot) =>
       for multiplayerSessionID, multiplayerSession of collectionSnapshot.val()
@@ -766,7 +774,7 @@ module.exports = class PlayLevelView extends RootView
             multiplayerSessionRef.update 'state': 'finished'
 
   onRealTimeMultiplayerLevelUnloaded: ->
-    # console.log 'PlayLevelView onRealTimeMultiplayerLevelUnloaded'
+# console.log 'PlayLevelView onRealTimeMultiplayerLevelUnloaded'
     if @timerMultiplayerHeartbeatID?
       clearInterval @timerMultiplayerHeartbeatID
       @timerMultiplayerHeartbeatID = null
@@ -787,26 +795,26 @@ module.exports = class PlayLevelView extends RootView
       @realTimePlayerRef = null
 
   onRealTimeMultiplayerHeartbeat: =>
-    # console.log 'PlayLevelView onRealTimeMultiplayerHeartbeat', @realTimePlayerRef
+# console.log 'PlayLevelView onRealTimeMultiplayerHeartbeat', @realTimePlayerRef
     @realTimePlayerRef.update 'heartbeat': new Date().toISOString() if @realTimePlayerRef?
 
   onRealTimeMultiplayerCreatedGame: (e) ->
-    # console.log 'PlayLevelView onRealTimeMultiplayerCreatedGame'
+# console.log 'PlayLevelView onRealTimeMultiplayerCreatedGame'
     @joinRealTimeMultiplayerGame e
     @realTimePlayerGameRef.update 'state': 'coding'
     @realTimePlayerRef.update 'state': 'available'
     Backbone.Mediator.publish 'real-time-multiplayer:player-status', status: 'Waiting for opponent..'
 
   onRealTimeSessionChanged: (snapshot) =>
-    # console.log 'PlayLevelView onRealTimeSessionChanged', snapshot.val()
+# console.log 'PlayLevelView onRealTimeSessionChanged', snapshot.val()
     @realTimeSessionData = snapshot.val()
     if @realTimeSessionData?.state is 'finished'
       @realTimeGameEnded()
       Backbone.Mediator.publish 'real-time-multiplayer:left-game', {}
 
   onRealTimePlayerAdded: (snapshot) =>
-    # console.log 'PlayLevelView onRealTimePlayerAdded', snapshot.val()
-    # Assume game is full, game on
+# console.log 'PlayLevelView onRealTimePlayerAdded', snapshot.val()
+# Assume game is full, game on
     data = snapshot.val()
     if data? and data.id isnt me.id
       @realTimeOpponentData = data
@@ -820,7 +828,7 @@ module.exports = class PlayLevelView extends RootView
         Backbone.Mediator.publish 'real-time-multiplayer:player-status', status: "Playing against #{@realTimeOpponentData.name}"
 
   onRealTimeOpponentChanged: (snapshot) =>
-    # console.log 'PlayLevelView onRealTimeOpponentChanged', snapshot.val()
+# console.log 'PlayLevelView onRealTimeOpponentChanged', snapshot.val()
     @realTimeOpponentData = snapshot.val()
     switch @realTimeOpponentData?.state
       when 'left'
@@ -829,11 +837,11 @@ module.exports = class PlayLevelView extends RootView
         @realTimeGameEnded()
         Backbone.Mediator.publish 'real-time-multiplayer:left-game', userID: opponentID
       when 'submitted'
-        # TODO: What should this message say?
+# TODO: What should this message say?
         Backbone.Mediator.publish 'real-time-multiplayer:player-status', status: "#{@realTimeOpponentData.name} waiting for your code"
 
   joinRealTimeMultiplayerGame: (e) ->
-    # console.log 'PlayLevelView joinRealTimeMultiplayerGame', e
+# console.log 'PlayLevelView joinRealTimeMultiplayerGame', e
     unless @realTimeSessionRef?
       @session.set('submittedCodeLanguage', @session.get('codeLanguage'))
       @session.save()
@@ -866,24 +874,24 @@ module.exports = class PlayLevelView extends RootView
 
       @realTimePlayerGameRef = @realTimeSessionRef.child "players/#{me.id}"
 
-    # TODO: Follow up in MultiplayerView to see if double joins can be avoided
-    # else
-    #   console.error 'Joining real-time multiplayer game with an existing @realTimeSessionRef.'
+# TODO: Follow up in MultiplayerView to see if double joins can be avoided
+# else
+#   console.error 'Joining real-time multiplayer game with an existing @realTimeSessionRef.'
 
   onRealTimeMultiplayerJoinedGame: (e) ->
-    # console.log 'PlayLevelView onRealTimeMultiplayerJoinedGame', e
+# console.log 'PlayLevelView onRealTimeMultiplayerJoinedGame', e
     @joinRealTimeMultiplayerGame e
     @realTimePlayerGameRef.update 'state': 'coding'
     @realTimePlayerRef.update 'state': 'unavailable'
 
   onRealTimeMultiplayerLeftGame: (e) ->
-    # console.log 'PlayLevelView onRealTimeMultiplayerLeftGame', e
+# console.log 'PlayLevelView onRealTimeMultiplayerLeftGame', e
     if e.userID? and e.userID is me.id
       @realTimePlayerGameRef.update 'state': 'left'
       @realTimeGameEnded()
 
   realTimeMultiplayerContinueGame: (realTimeSessionID) ->
-    # console.log 'PlayLevelView realTimeMultiplayerContinueGame', realTimeSessionID, me.id
+# console.log 'PlayLevelView realTimeMultiplayerContinueGame', realTimeSessionID, me.id
     Backbone.Mediator.publish 'real-time-multiplayer:joined-game', realTimeSessionID: realTimeSessionID
 
     console.info 'Setting my game status to ready'
@@ -896,7 +904,7 @@ module.exports = class PlayLevelView extends RootView
       @realTimeOpponentRef.on 'value', @realTimeOpponentMaybeReady
 
   realTimeOpponentMaybeReady: (snapshot) =>
-    # console.log 'PlayLevelView realTimeOpponentMaybeReady'
+# console.log 'PlayLevelView realTimeOpponentMaybeReady'
     if @realTimeOpponentData = snapshot.val()
       if @realTimeOpponentData.state is 'ready'
         @realTimeOpponentRef.off 'value', @realTimeOpponentMaybeReady
@@ -926,7 +934,7 @@ module.exports = class PlayLevelView extends RootView
     Backbone.Mediator.publish 'real-time-multiplayer:player-status', status: ''
 
   onRealTimeMultiplayerCast: (e) ->
-    # console.log 'PlayLevelView onRealTimeMultiplayerCast', @realTimeSessionData, @realTimePlayersData
+# console.log 'PlayLevelView onRealTimeMultiplayerCast', @realTimeSessionData, @realTimePlayersData
     unless @realTimeSessionRef?
       console.error 'Real-time multiplayer cast without multiplayer session.'
       return
@@ -973,7 +981,7 @@ module.exports = class PlayLevelView extends RootView
     if @realTimeOpponentData.state in ['submitted', 'ready']
       @realTimeOpponentSubmittedCode @realTimeOpponentData, @realTimePlayerGameData
     else
-      # Wait for opponent to submit their code
+# Wait for opponent to submit their code
       Backbone.Mediator.publish 'real-time-multiplayer:player-status', status: "Waiting for code from #{@realTimeOpponentData.name}"
       @realTimeOpponentRef.on 'value', @realTimeOpponentMaybeSubmitted
 
@@ -984,7 +992,7 @@ module.exports = class PlayLevelView extends RootView
         @realTimeOpponentSubmittedCode @realTimeOpponentData, @realTimePlayerGameData
 
   onRealTimeMultiplayerPlaybackEnded: ->
-    # console.log 'PlayLevelView onRealTimeMultiplayerPlaybackEnded'
+# console.log 'PlayLevelView onRealTimeMultiplayerPlaybackEnded'
     if @realTimeSessionRef?
       @realTimeSessionRef.update 'state': 'coding'
       @realTimePlayerGameRef.update 'state': 'coding'
@@ -992,13 +1000,13 @@ module.exports = class PlayLevelView extends RootView
       Backbone.Mediator.publish 'real-time-multiplayer:player-status', status: "Playing against #{@realTimeOpponentData.name}"
 
   realTimeOpponentSubmittedCode: (opponentPlayer, myPlayer) =>
-    # console.log 'PlayLevelView realTimeOpponentSubmittedCode', @realTimeSessionData.id, opponentPlayer.level_session
-    # Read submissionCount for joined real-time multiplayer session
+# console.log 'PlayLevelView realTimeOpponentSubmittedCode', @realTimeSessionData.id, opponentPlayer.level_session
+# Read submissionCount for joined real-time multiplayer session
     if me.id isnt @realTimeSessionData.creator
       sessionState = @session.get('state') ? {}
       newSubmissionCount = @realTimeSessionData.submissionCount
       if newSubmissionCount?
-        # TODO: This isn't always getting updated where the random seed generation uses it.
+# TODO: This isn't always getting updated where the random seed generation uses it.
         sessionState.submissionCount = parseInt newSubmissionCount
         console.info 'Got multiplayer submissionCount', sessionState.submissionCount
         @session.set 'state', sessionState
@@ -1011,8 +1019,8 @@ module.exports = class PlayLevelView extends RootView
       viewArgs: [{supermodel: @supermodel, autoUnveil: true, realTimeMultiplayerSessionID: @realTimeSessionData.id, opponent: opponentPlayer.level_session, team: @team}, @levelID]
 
   updateTeam: ->
-    # If not creator, and same team as creator, then switch teams
-    # TODO: Assumes there are only 'humans' and 'ogres'
+# If not creator, and same team as creator, then switch teams
+# TODO: Assumes there are only 'humans' and 'ogres'
 
     unless @realTimeOpponentData?
       console.error 'Tried to switch teams without real-time multiplayer opponent data.'
@@ -1042,13 +1050,13 @@ module.exports = class PlayLevelView extends RootView
       for newSpellKey in teamSpells[newTeam]
         [newThang, newSpell] = newSpellKey.split '/'
         if newSpell is oldSpell
-          # Found spell location under new team
-          # console.log "Swapping spell=#{oldSpell} from #{oldThang} to #{newThang}"
+# Found spell location under new team
+# console.log "Swapping spell=#{oldSpell} from #{oldThang} to #{newThang}"
           if code[newThang]?[oldSpell]?
-            # Option 1: have a new spell to swap
+# Option 1: have a new spell to swap
             code[oldThang][oldSpell] = code[newThang][oldSpell]
           else
-            # Option 2: no new spell to swap
+# Option 2: no new spell to swap
             delete code[oldThang][oldSpell]
           code[newThang] = {} unless code[newThang]?
           code[newThang][oldSpell] = oldCode
@@ -1057,14 +1065,14 @@ module.exports = class PlayLevelView extends RootView
     @setTeam newTeam # Sets @session 'team'
     sessionState = @session.get('state')
     if sessionState?
-    # TODO: Don't hard code thangID
+# TODO: Don't hard code thangID
       sessionState.selected = if newTeam is 'humans' then 'Hero Placeholder' else 'Hero Placeholder 1'
       @session.set 'state', sessionState
     @session.set 'code', code
     @session.patch()
 
     if sessionState?
-      # TODO: Don't hardcode spellName
+# TODO: Don't hardcode spellName
       Backbone.Mediator.publish 'level:select-sprite', thangID: sessionState.selected, spellName: 'plan'
 
 # End Real-time Multiplayer ######################################################

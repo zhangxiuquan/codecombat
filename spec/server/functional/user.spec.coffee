@@ -8,6 +8,7 @@ request = require '../request'
 
 describe 'POST /db/user', ->
 
+  console.log("什么POST /db/user")
   createAnonNameUser = (name, done)->
     request.post getURL('/auth/logout'), ->
       request.get getURL('/auth/whoami'), ->
@@ -39,7 +40,7 @@ describe 'POST /db/user', ->
 
   it 'serves the user through /db/user/id', (done) ->
     unittest.getNormalJoe (user) ->
-      request.post getURL('/auth/logout'), ->
+      utils.becomeAnonymous().then ->
         url = getURL(urlUser+'/'+user._id)
         request.get url, (err, res, body) ->
           expect(res.statusCode).toBe(200)
@@ -566,6 +567,12 @@ describe 'DELETE /db/user', ->
     expect(classroom.get('deletedMembers').length).toBe(1)
     expect(classroom.get('members')[0].toString()).toEqual(user2.id)
     expect(classroom.get('deletedMembers')[0].toString()).toEqual(user.id)
+    done()
+    
+  it 'returns 401 if no cookie session', utils.wrap (done) ->
+    yield utils.logout()
+    [res, body] = yield request.delAsync {uri: "#{getURL(urlUser)}/1234"}
+    expect(res.statusCode).toBe(401)
     done()
 
 describe 'Statistics', ->

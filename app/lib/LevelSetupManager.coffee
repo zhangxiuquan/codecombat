@@ -104,6 +104,8 @@ module.exports = class LevelSetupManager extends CocoClass
     lastHeroesEarned = me.get('earned')?.heroes ? []
     lastHeroesPurchased = me.get('purchased')?.heroes ? []
 
+    console.log 'hero open openModalView'
+
     @options.parent.openModalView(firstModal)
     @trigger 'open'
     #    @inventoryModal.onShown() # replace?

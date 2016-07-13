@@ -19,6 +19,7 @@ module.exports = class CocoRouter extends Backbone.Router
       return @routeDirectly('NewHomeView', [])
 
     'l': go('l/my')
+    'l/game/:levelID': go('play/level/my-game')
 
     'about': go('AboutView')
 
@@ -133,6 +134,9 @@ module.exports = class CocoRouter extends Backbone.Router
     'play/ladder': go('ladder/MainLadderView')
     'play/level/:levelID': go('play/level/PlayLevelView')
     'play/spectate/:levelID': go('play/SpectateView')
+
+    'play/autologin': go('play/AutoLogin') # 自动登陆
+
     'play/:map': go('play/CampaignView')
 
     'preview': go('HomeView')
@@ -174,9 +178,9 @@ module.exports = class CocoRouter extends Backbone.Router
     @navigate e, {trigger: true}
 
   routeDirectly: (path, args=[], options={}) ->
-    if options.teachersOnly and not me.isTeacher()
+    if options.teachersOnly and not (me.isTeacher() or me.isAdmin())
       return @routeDirectly('teachers/RestrictedToTeachersView')
-    if options.studentsOnly and not me.isStudent()
+    if options.studentsOnly and not (me.isStudent() or me.isAdmin())
       return @routeDirectly('courses/RestrictedToStudentsView')
     leavingMessage = _.result(window.currentView, 'onLeaveMessage')
     if leavingMessage

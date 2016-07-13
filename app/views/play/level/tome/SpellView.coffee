@@ -51,7 +51,7 @@ module.exports = class SpellView extends CocoView
     'playback:ended-changed': 'onPlaybackEndedChanged'
     'level:contact-button-pressed': 'onContactButtonPressed'
     'level:show-victory': 'onShowVictory'
-
+    'l:add-code': 'onAddCode'
   events:
     'mouseout': 'onMouseOut'
 
@@ -109,6 +109,11 @@ module.exports = class SpellView extends CocoView
     $(@ace.container).find('.ace_gutter').on 'click mouseenter', '.ace_error, .ace_warning, .ace_info', @onAnnotationClick
     $(@ace.container).find('.ace_gutter').on 'click', @onGutterClick
     @initAutocomplete aceConfig.liveCompletion ? true
+    #禁止编辑代码
+    #$(@ace.container).find('.ace_text-input')
+    #                   .attr("disabled",true)
+    #                   .attr("readonly",true);
+
 
     return if @session.get('creator') isnt me.id or @session.fake
     # Create a Spade to 'dig' into Ace.
@@ -314,13 +319,20 @@ module.exports = class SpellView extends CocoView
             if /^\s+$/.test lines[docRange.end.row+1]
               docRange.end.row += 1
 
+            xstart = startOfRow(row)
+            if language is 'python'
+              requiredIndent = new RegExp '^' + new Array(xstart / 4 + 2).join '(    |\t)' + '(\\S|\\s*$)'
+              console.log requiredIndent
+              for crow in [docRange.start.row+1..docRange.end.row]
+                console.log("CROW", xstart, crow, lines[crow])
+                unless requiredIndent.test lines[crow]
+                  docRange.end.row = crow - 1
+                  break
+
             rstart = @aceSession.documentToScreenPosition docRange.start.row, docRange.start.column
             rend = @aceSession.documentToScreenPosition docRange.end.row, docRange.end.column
             range = new Range rstart.row, rstart.column, rend.row, rend.column
-
-            xstart = startOfRow(row)
             level = Math.floor(xstart / 4)
-            indent = startOfRow(row + 1)
             color = colors[level % colors.length]
             bw = 3
             to = markerLayer.$getTop(range.start.row, config)
@@ -692,6 +704,8 @@ module.exports = class SpellView extends CocoView
       @aceDoc.insertNewLine row: lineCount, column: 0  #lastLine.length
       @ace.navigateLeft(1) if wasAtEnd
       ++lineCount
+      # Force the popup back
+      @ace?.completer?.showPopup(@ace)
     screenLineCount = @aceSession.getScreenLength()
     if screenLineCount isnt @lastScreenLineCount
       @lastScreenLineCount = screenLineCount
@@ -744,6 +758,17 @@ module.exports = class SpellView extends CocoView
     if @saveSpadeTimeout?
       window.clearTimeout @saveSpadeTimeout
       @saveSpadeTimeout = null
+  #监听外部添加代码
+  onAddCode: (e) ->
+    console.log '添加代码'
+    #lineCount = @aceDoc.getLength()
+    #lastLine = @aceDoc.$lines[lineCount - 1]
+    #@aceDoc.insertMergedLines {row: lineCount, column: 0} ,[e.code]
+    #添加到当前位置，自动换行
+    cursor = @ace.getCursorPosition();
+    @aceDoc.insertMergedLines cursor ,[e.code,'']
+    #@ace.moveCursorToPosition(e);
+    @lockDefaultCode()
 
   onManualCast: (e) ->
     cast = @$el.parent().length
@@ -761,7 +786,7 @@ module.exports = class SpellView extends CocoView
     @lockDefaultCode true
     @recompile cast
     Backbone.Mediator.publish 'tome:spell-loaded', spell: @spell
-    @updateLines()
+
 
   recompile: (cast=true, realTime=false) ->
     hasChanged = @spell.source isnt @getSource()

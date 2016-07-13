@@ -14,6 +14,7 @@ LevelSession = require '../models/LevelSession'
 
 module.exports =
   checkDocumentPermissions: (req, res, next) ->
+    console.log("检查是权限")
     return next() if req.user?.isAdmin()
     if not req.doc.hasPermissionsForMethod(req.user, req.method)
       if req.user
@@ -23,6 +24,7 @@ module.exports =
     
   checkLoggedIn: ->
     return (req, res, next) ->
+      console.log("检查是否登陆")
       if (not req.user) or (req.user.isAnonymous())
         return next new errors.Unauthorized('You must be logged in.')
       next()
@@ -39,6 +41,7 @@ module.exports =
       next()
 
   checkHasUser: ->
+    console.log("检查是否存在用户checkHasUser")
     return (req, res, next) ->
       if not req.user
         return next new errors.Unauthorized('No user associated with this request.')
@@ -58,9 +61,12 @@ module.exports =
     res.end()
 
   afterLogin: wrap (req, res, next) ->
+
+    console.log("afterLogin");
     activity = req.user.trackActivity 'login', 1
     yield req.user.update {activity: activity}
     res.status(200).send(req.user.toObject({req: req}))
+
 
   loginByGPlus: wrap (req, res, next) ->
     gpID = req.body.gplusID

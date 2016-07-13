@@ -238,6 +238,8 @@ UserHandler = class UserHandler extends Handler
     req.query.limit = parseInt(req.query.limit) ? 20
 
   post: (req, res) ->
+    console.log("用户 UserHandler post 事件")
+    console.log("req.body-> "+req.body)
     return @sendBadInputError(res, 'No input.') if _.isEmpty(req.body)
     return @sendBadInputError(res, 'Must have an anonymous user to post with.') unless req.user
     return @sendBadInputError(res, 'Existing users cannot create new ones.') if req.user.get('anonymous') is false
@@ -686,8 +688,8 @@ UserHandler = class UserHandler extends Handler
 
   buildGravatarURL: (user, size, fallback) ->
     emailHash = @buildEmailHash user
-    fallback ?= 'http://codecombat.com/file/db/thang.type/52a00d55cf1818f2be00000b/portrait.png'
-    fallback = "http://codecombat.com#{fallback}" unless /^http/.test fallback
+    fallback ?= 'https://codecombat.com/file/db/thang.type/52a00d55cf1818f2be00000b/portrait.png'
+    fallback = "https://codecombat.com#{fallback}" unless /^http/.test fallback
     "https://www.gravatar.com/avatar/#{emailHash}?s=#{size}&default=#{fallback}"
 
   buildEmailHash: (user) ->

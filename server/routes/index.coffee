@@ -1,9 +1,20 @@
 mw = require '../middleware'
 
+mmmm = {}
+mmmm.fff  =  (req, res, next) ->
+                  console.log("req")
+                  console.log("登陆请求")
+                  mmmm.orfun(req,res,next)
+
 module.exports.setup = (app) ->
 
+  console.log("module.exports.setup");
+
   passport = require('passport')
-  app.post('/auth/login', passport.authenticate('local'), mw.auth.afterLogin)
+  #app.post('/auth/login', passport.authenticate('local'), mw.auth.afterLogin)
+  mmmm.orfun=passport.authenticate('local')
+  app.post('/auth/login', mmmm.fff, mw.auth.afterLogin)
+
   app.post('/auth/login-facebook', mw.auth.loginByFacebook, mw.auth.afterLogin)
   app.post('/auth/login-gplus', mw.auth.loginByGPlus, mw.auth.afterLogin)
   app.post('/auth/logout', mw.auth.logout)
@@ -14,6 +25,8 @@ module.exports.setup = (app) ->
   app.get('/auth/unsubscribe', mw.auth.unsubscribe)
   app.get('/auth/whoami', mw.auth.whoAmI)
 
+  app.all('/db/*', mw.auth.checkHasUser())
+  
   Achievement = require '../models/Achievement'
   app.get('/db/achievement', mw.achievements.fetchByRelated, mw.rest.get(Achievement))
   app.post('/db/achievement', mw.auth.checkHasPermission(['admin', 'artisan']), mw.rest.post(Achievement))
@@ -28,7 +41,7 @@ module.exports.setup = (app) ->
 
   Article = require '../models/Article'
   app.get('/db/article', mw.rest.get(Article))
-  app.post('/db/article', mw.auth.checkHasPermission(['admin', 'artisan']), mw.rest.post(Article))
+  app.post('/db/article', mw.auth.checkLoggedIn(), mw.auth.checkHasPermission(['admin', 'artisan']), mw.rest.post(Article))
   app.get('/db/article/names', mw.named.names(Article))
   app.post('/db/article/names', mw.named.names(Article))
   app.get('/db/article/:handle', mw.rest.getByHandle(Article))
@@ -58,6 +71,7 @@ module.exports.setup = (app) ->
   app.get('/db/classroom', mw.classrooms.fetchByCode, mw.classrooms.getByOwner)
   app.get('/db/classroom/:handle/levels', mw.classrooms.fetchAllLevels)
   app.get('/db/classroom/:handle/courses/:courseID/levels', mw.classrooms.fetchLevelsForCourse)
+  app.post('/db/classroom/:handle/invite-members', mw.classrooms.inviteMembers)
   app.get('/db/classroom/:handle/member-sessions', mw.classrooms.fetchMemberSessions)
   app.get('/db/classroom/:handle/members', mw.classrooms.fetchMembers) # TODO: Use mw.auth?
   app.post('/db/classroom/:classroomID/members/:memberID/reset-password', mw.classrooms.setStudentPassword)
@@ -65,7 +79,7 @@ module.exports.setup = (app) ->
   app.get('/db/classroom/:handle', mw.auth.checkLoggedIn()) # TODO: Finish migrating route, adding now so 401 is returned
 
   CodeLog = require ('../models/CodeLog')
-  app.post('/db/codelogs', mw.auth.checkHasUser(), mw.codelogs.post)
+  app.post('/db/codelogs', mw.codelogs.post)
   app.get('/db/codelogs', mw.auth.checkHasPermission(['admin']), mw.rest.get(CodeLog))
 
   Course = require '../models/Course'
@@ -86,7 +100,7 @@ module.exports.setup = (app) ->
   app.post('/db/user/:userID/request-verify-email', mw.users.sendVerificationEmail)
   app.post('/db/user/:userID/verify/:verificationCode', mw.users.verifyEmailAddress) # TODO: Finalize URL scheme
   
-  app.get('/db/level/:handle/session', mw.auth.checkHasUser(), mw.levels.upsertSession)
+  app.get('/db/level/:handle/session', mw.levels.upsertSession)
   
   app.get('/db/prepaid', mw.auth.checkLoggedIn(), mw.prepaids.fetchByCreator)
   app.post('/db/prepaid', mw.auth.checkHasPermission(['admin']), mw.prepaids.post)
