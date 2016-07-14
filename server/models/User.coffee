@@ -262,7 +262,9 @@ UserSchema.statics.unconflictName = unconflictName = (name, done) ->
     unconflictName name + suffix, done
 
 UserSchema.methods.register = (done) ->
-  console.log("注册？UserSchema register")
+  console.log("注册1？UserSchema register")
+  console.log @
+  console.log "注册2"
   @set('anonymous', false)
   if (name = @get 'name')? and name isnt ''
     unconflictName name, (err, uniqueName) =>

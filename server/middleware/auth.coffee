@@ -109,7 +109,8 @@ module.exports =
       console.log("没有mbid")
       res.send({})
       return
-    #从数据库中获取mbid对应的acount和password. 先测试
+    #从数据库中获取mbid对应的acount和password. 先测试,写假的用户名邮箱和密码
+    acount  = mbid+"@xxx.com"
     acount  = mbid+"@xxx.com"
     password=acount
     #1. 自动登录，如果登录不了，则自动注册（密码错误需要另行处理）
@@ -125,26 +126,36 @@ module.exports =
     console.log("没有用户"+acount)
     #2.自动注册
     #如果已经登录，且不是匿名用户，则注销登录
-    if (not req.user) or (req.user.isAnonymous())
+    if (not req.user) and (not req.user.isAnonymous())
       console.log("注销用户"+acount)
       req.logout()
     #注册
     console.log("注册"+acount)
 
-    req.param["email"]=acount
-    req.param["password"]=password
-    req.param["name"]=acount
+    req.body.email=acount
+    req.body.password=password
+    req.body.name=acount
+    req.body.preferredLanguage="zh-HANS"
+    req.body.birthday="1980-01-01T00:00:00.000Z"
+    req.body.generalNews={enabled: true}
 
+    console.log req.body
     user = User.makeNew(req)
-    user.anonymous=false;
-    user.email=acount
-    user.name=acount
-    user.password=password
-    #user.set("email",email)
-    #user.set("name",acount)
-    #user.set("password",password)
+    console.log "1"
+    console.log user
+    #设置用户数据，然后保存到数据库，即可完成注册
+    user.set('email',acount)
+    user.set('password',password)
+    user.set('name',acount)
+    user.set('preferredLanguage',"zh-HANS")
+    user.set('birthday',"1980-01-01T00:00:00.000Z")
+    user.set('generalNews',{enabled: true})
+    console.log "2"
+    console.log user
     yield user.save()
-    #设置seesion
+    console.log "3"
+    console.log user
+    #登陆设置seesion
     req.logInAsync = Promise.promisify(req.logIn)
     yield req.logInAsync(user)
     res.send(user)
