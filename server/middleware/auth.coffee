@@ -12,6 +12,9 @@ authentication = require 'passport'
 sendwithus = require '../sendwithus'
 LevelSession = require '../models/LevelSession'
 
+#获取
+MbUser = require '../models/MbUser'
+
 module.exports =
   checkDocumentPermissions: (req, res, next) ->
     console.log("检查是权限")
@@ -101,64 +104,82 @@ module.exports =
     #使用id登录
   loginByMbID: wrap (req, res) ->
     console.log("loginByMbID登陆2")
-    console.log req
-    mbid =  req.query.mbid
+    mbid =  req.query.mbid or req.body.mbid or  req.params.mbid
+
     if not mbid
-      mbid = req.params.mbid
-    if not mbid
-      console.log("没有mbid")
       res.send({})
+      console.log("没有mbid")
       return
+
+    user = yield MbUser.findOne({mbid:mbid})
+    console.log user
+    if not user
+      res.send({msg:'没找到记录'})
+      console.log("没找到记录"+mbid)
+      return
+
     #从数据库中获取mbid对应的acount和password. 先测试,写假的用户名邮箱和密码
-    acount  = mbid+"@xxx.com"
-    acount  = mbid+"@xxx.com"
-    password=acount
+    name  = user.get('name')
+    email  =  user.get('email')
+    password=  user.get('password')
+
     #1. 自动登录，如果登录不了，则自动注册（密码错误需要另行处理）
-    user = yield User.findOne({email:acount})
-    if  user
-        #找到用户，则登录成功，则继续返回页面
-      console.log("自动登录"+acount)
+    user = yield User.findOne({email:email})
+    if  user and user.get('email')
+      #找到用户，则登录成功，则继续返回页面
+      console.log("自动登录"+name)
       req.logInAsync = Promise.promisify(req.logIn)
       yield req.logInAsync(user)
       res.send({})
       return
     #没有用户，账号不存在。 则自动注册
-    console.log("没有用户"+acount)
+    console.log("没有用户"+name)
     #2.自动注册
     #如果已经登录，且不是匿名用户，则注销登录
     if (not req.user) and (not req.user.isAnonymous())
-      console.log("注销用户"+acount)
+      console.log("注销用户"+name)
       req.logout()
     #注册
-    console.log("注册"+acount)
-
-    req.body.email=acount
-    req.body.password=password
-    req.body.name=acount
-    req.body.preferredLanguage="zh-HANS"
-    req.body.birthday="1980-01-01T00:00:00.000Z"
-    req.body.generalNews={enabled: true}
-
-    console.log req.body
+    console.log("注册"+name)
     user = User.makeNew(req)
-    console.log "1"
-    console.log user
     #设置用户数据，然后保存到数据库，即可完成注册
-    user.set('email',acount)
+    user.set('email',email)
     user.set('password',password)
-    user.set('name',acount)
+    user.set('name',name)
     user.set('preferredLanguage',"zh-HANS")
     user.set('birthday',"1980-01-01T00:00:00.000Z")
     user.set('generalNews',{enabled: true})
-    console.log "2"
-    console.log user
     yield user.save()
-    console.log "3"
-    console.log user
+    console.log "注册成功"
     #登陆设置seesion
     req.logInAsync = Promise.promisify(req.logIn)
     yield req.logInAsync(user)
     res.send(user)
+
+  #添加mbid,对应的账户、邮箱、密码
+  addMbID: wrap (req, res) ->
+    #获取参数，query是get方法，body是post json的参数。
+    console.log "addMbID"
+    mbid = req.body.mbid or req.query.mbid
+    name = req.body.name or req.query.name
+    email = req.body.email or req.query.email
+    password = req.body.password or req.query.password
+    #校验参数
+    console.log mbid+' '+name+' '+email+' '+password
+    return res.send({msg:'没有mbid参数',err:1}) if not mbid
+    return res.send({msg:'没有name参数',err:2}) if not name
+    return res.send({msg:'没有email参数',err:3}) if not email
+    return res.send({msg:'没有password参数',err:4}) if not password
+    #校验是否已经存在mbid
+    user = yield  MbUser.findOne({mbid:mbid})
+    return res.send({msg:'存在相同的mbid',err:5}) if user
+    #保存
+    user= new MbUser({mbid:mbid,name:name,email:email,password:password })
+    yield user.save()
+    console.log '添加成功'
+    console.log user
+    res.send({msg:'添加成功',err:0,user:user})
+
 
   spy: wrap (req, res) ->
     throw new errors.Unauthorized('You must be logged in to enter espionage mode') unless req.user

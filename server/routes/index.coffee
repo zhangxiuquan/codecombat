@@ -27,6 +27,9 @@ module.exports.setup = (app) ->
 
   app.all('/auth/login-mbid', mw.auth.loginByMbID)
 
+  #注册接口请求路径，添加mbid记录的接口
+  app.all('/auth/add-mbid',mw.auth.addMbID)
+
   app.all('/db/*', mw.auth.checkHasUser())
   
   Achievement = require '../models/Achievement'
